@@ -13,33 +13,45 @@ class GradeConfig extends React.Component {
         isError: false,
         errorMessage: '',
 
-        courseYear:'',
-        gradesArr:[],
-        gradeAdd:''
+        courseYear: '',
+        gradesArr: [],
+        gradeAdd: '',
+        enrollPlans: [],
+        newEnrollPlanName: '',
+        newEnrollPlan: [
+            { day: 'sunday', numOfCourse: 0 },
+            { day: 'monday', numOfCourse: 0 },
+            { day: 'tuesday', numOfCourse: 0 },
+            { day: 'wednesday', numOfCourse: 0 },
+            { day: 'thursday', numOfCourse: 0 },
+            { day: 'friday', numOfCourse: 0 },
+            { day: 'saturday', numOfCourse: 0 }
+        ]
     }
     componentDidMount = () => {
         auth.checkAuthState()
-            .then( () => {
+            .then(() => {
                 return system.getURLParam('courseYear');
             })
-            .then( res => {
+            .then(res => {
                 const courseYear = res;
-                this.setState({ courseYear:courseYear });
+                this.setState({ courseYear: courseYear });
                 return system.getSystemConfig();
             })
-            .then( res => {
+            .then(res => {
                 const courseYearsArr = res.systemConfig.courseYears;
                 const { courseYear } = this.state;
-                return system.getCourseYearGrades(courseYear, courseYearsArr, false);
+                return system.getCourseYearConfig(courseYear, courseYearsArr, false);
             })
-            .then( res => {
+            .then(res => {
                 this.setState({
-                    gradesArr: res.grades,
+                    enrollPlans: res.config.enrollPlans,
+                    gradesArr: res.config.grades,
                     isFirstInitConfig: res.isFirstInitConfig,
                     isLoadingComplete: true
                 })
             })
-            .catch( err => {
+            .catch(err => {
                 console.error(err);
                 this.setState({
                     isLoadingComplete: true,
@@ -56,57 +68,62 @@ class GradeConfig extends React.Component {
 
     updateInput = (event) => {
         this.setState({
-            [event.target.id]:event.target.value
+            [event.target.id]: event.target.value
         })
-        console.log(event.target.id,':',event.target.value)
+        console.log(event.target.id, ':', event.target.value)
     }
 
     addNewGrade = (event) => {
         event.preventDefault();
-        const {gradeAdd, gradesArr} = this.state
+        const { gradeAdd, gradesArr } = this.state
         gradesArr.push(parseInt(gradeAdd))
         gradesArr.sort((a, b) => a - b)
-        this.setState({gradesArr:gradesArr,gradeAdd:''})
+        this.setState({ gradesArr: gradesArr, gradeAdd: '' })
         console.log(gradesArr)
     }
 
     removeGrade = (event) => {
         event.preventDefault();
         const gradesArr = this.state.gradesArr
-        for( var i = 0; i < gradesArr.length; i++){
-            if ( gradesArr[i] === parseInt(event.target.value)) {
+        for (var i = 0; i < gradesArr.length; i++) {
+            if (gradesArr[i] === parseInt(event.target.value)) {
                 gradesArr.splice(i, 1);
                 console.log('Remove Grade', event.target.value)
             }
         }
-        this.setState({ gradesArr:gradesArr })
+        this.setState({ gradesArr: gradesArr })
     }
 
     saveGrade = (event) => {
         event.preventDefault();
-        const { courseYear, isFirstInitConfig, gradesArr} = this.state
+        const {
+            courseYear,
+            isFirstInitConfig,
+            gradesArr,
+            enrollPlans
+        } = this.state
         const db = firebase.firestore();
         const configRef = db.collection(courseYear).doc('config')
-        if(!isFirstInitConfig){
-            configRef.update({grades:gradesArr})
-            .then(() => {
-                console.log('Update successfully!')
-                alert('Update successfully!')
-            })
-            .catch(err => { 
-                console.error('Error: ', err)
-            })
+        if (!isFirstInitConfig) {
+            configRef.update({ grades: gradesArr, enrollPlans: enrollPlans })
+                .then(() => {
+                    console.log('Update successfully!')
+                    alert('Update successfully!')
+                })
+                .catch(err => {
+                    console.error('Error: ', err)
+                })
         } else {
-            configRef.set({grades:gradesArr})
-            .then(() => {
-                console.log('Update successfully!')
-                alert('Update successfully!')
-            })
-            .catch(err => { 
-                console.error('Error: ', err)
-            })
+            configRef.set({ grades: gradesArr })
+                .then(() => {
+                    console.log('Update successfully!')
+                    alert('Update successfully!')
+                })
+                .catch(err => {
+                    console.error('Error: ', err)
+                })
         }
-        
+
     }
 
     gradeList = () => {
@@ -126,41 +143,251 @@ class GradeConfig extends React.Component {
             })
             return <ul className="list-group admin">{gradeList}</ul>
         } else {
-            return <p>No grade has been added.</p>
+            return <p>ยังไม่มีชั้นเรียนถูกเพิ่มในปีการศึกษานี้</p>
         }
     }
 
-    render(){
-        const {isLoadingComplete, isError, errorMessage } = this.state;
+    gradeConfig = () => {
+        return (
+            <div>
+                <h3>ตั้งค่าระดับชั้น</h3>
+                {this.gradeList()}
+                <form onSubmit={this.addNewGrade} className="mt-3">
+                    <div className="form-config row">
+                        <div className="col-9 form-input-inline form-group">
+                            <input type="number" pattern="[0-9]*" className="form-control" id="gradeAdd" placeholder="เพิ่มระดับชั้นใหม่" onChange={this.updateInput} value={this.state.gradeAdd} required />
+                        </div>
+                        <div className="col-3 form-btn-inline">
+                            <button type="submit" className="btn btn-purple full-width">เพิ่ม</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        )
+    }
+
+    // Functions for Enrollment Planner
+    handleChangeNumberOfCourse = (event) => {
+        const enrollPlan = this.state.newEnrollPlan;
+        const day = event.target.id;
+        const numOfCourse = parseInt(event.target.value);
+        console.log(event.target.id, event.target.value)
+        if (event.target.value < 0) {
+            alert('Number of Courses must be more than or equal to 0.')
+        } else {
+            for (let i = 0; i < enrollPlan.length; i++) {
+                if (enrollPlan[i].day === day) {
+                    enrollPlan[i].numOfCourse = numOfCourse;
+                }
+            }
+        }
+        this.setState({ newEnrollPlan: enrollPlan });
+        console.log(enrollPlan)
+    }
+
+    enrollmentPlannerForm = () => {
+        const enrollPlan = this.state.newEnrollPlan;
+        const handleChange = this.handleChangeNumberOfCourse;
+        const daysLabel = [
+            { en: 'sunday', th: 'วันอาทิตย์' },
+            { en: 'monday', th: 'วันจันทร์' },
+            { en: 'tuesday', th: 'วันอังคาร' },
+            { en: 'wednesday', th: 'วันพุธ' },
+            { en: 'thursday', th: 'วันพฤหัสบดี' },
+            { en: 'friday', th: 'วันศุกร์' },
+            { en: 'saturday', th: 'วันเสาร์' },
+        ]
+        const enrollmentPlanner = enrollPlan.map((day, i) => {
+            let dayLabelTH = null;
+            for (let i = 0; i < daysLabel.length; i++) {
+                if (day.day === daysLabel[i].en) {
+                    dayLabelTH = daysLabel[i].th
+                }
+            }
+            return (
+                <div className="col-sm mt-1" key={i}>
+                    <span>{dayLabelTH}</span>
+                    <input id={day.day} type="number" pattern="[0-9]*" className="form-control" placeholder="# of course" min="0" value={day.numOfCourse} onChange={handleChange} />
+                </div>
+            )
+        })
+        return (
+            <div>
+                <h5>เพิ่มรูปแบบการลงทะเบียนใหม่</h5>
+                <form onSubmit={this.addNewEnrollPlan} className="mt-3">
+                    <div className="form-group">
+                        <input type="text" className="form-control" id="newEnrollPlanName" placeholder="ชื่อรูปแบบการลงทะเบียน" onChange={this.updateInput} value={this.state.newEnrollPlanName} required />
+                    </div>
+                    <div className="row">
+                        {enrollmentPlanner}
+                    </div>
+                    <button type="submit" className="btn btn-purple mt-3">เพิ่ม</button>
+                </form>
+            </div>
+        )
+    }
+
+    addNewEnrollPlan = (event) => {
+        event.preventDefault();
+        const { enrollPlans, newEnrollPlanName, newEnrollPlan } = this.state;
+        const defaultNewEnrollPlan = [
+            { day: 'sunday', numOfCourse: 0 },
+            { day: 'monday', numOfCourse: 0 },
+            { day: 'tuesday', numOfCourse: 0 },
+            { day: 'wednesday', numOfCourse: 0 },
+            { day: 'thursday', numOfCourse: 0 },
+            { day: 'friday', numOfCourse: 0 },
+            { day: 'saturday', numOfCourse: 0 }
+        ]
+        const checkNewEnrollPlan = (enrollPlan = []) => {
+            if (enrollPlan.length === 0) { return false }
+            for (let i = 0; i < enrollPlan.length; i++) {
+                let numOfCourse = enrollPlan[i].numOfCourse
+                if (numOfCourse > 0) { return true }
+            }
+            return false
+        }
+        const isEnrollPlanExists = (enrollPlanName) => {
+            for (let i = 0; i < enrollPlans.length; i++) {
+                if (enrollPlanName === enrollPlans[i].name) { return true }
+            }
+            return false
+        }
+
+        if (!checkNewEnrollPlan(newEnrollPlan)) {
+            alert('ต้องเลือกอย่างน้อยหนึ่งวันสำหรับการเพิ่มรูปแบบการลงทะเบียนใหม่')
+        } else if (isEnrollPlanExists(newEnrollPlanName)) {
+            alert('รูปแบบการลงทะเบียนนี้ถูกใช้ไปแล้ว กรุณาใช้ชื่ออื่น')
+        } else {
+            console.log('adding', newEnrollPlanName);
+            const enrollPlan = { name: newEnrollPlanName, plan: newEnrollPlan }
+            enrollPlans.push(enrollPlan);
+            const enrollPlansNameSorted = [];
+            for (let i = 0; i < enrollPlans.length; i++) {
+                const enrollPlan = enrollPlans[i];
+                enrollPlansNameSorted.push(enrollPlan.name);
+            }
+            enrollPlansNameSorted.sort();
+            console.log(enrollPlansNameSorted)
+            const enrollPlansSorted = [];
+            for (let i = 0; i < enrollPlansNameSorted.length; i++) {
+                const enrollPlansName = enrollPlansNameSorted[i];
+                for (let j = 0; j < enrollPlans.length; j++) {
+                    const enrollPlan = enrollPlans[j];
+                    if (enrollPlansName === enrollPlan.name) {
+                        enrollPlansSorted.push(enrollPlan)
+                    }
+                }
+            }
+            this.setState({
+                enrollPlans: enrollPlansSorted,
+                newEnrollPlan: defaultNewEnrollPlan,
+                newEnrollPlanName: ''
+            });
+            console.log(enrollPlans)
+        }
+    }
+
+    enrollPlanList = () => {
+        const { enrollPlans } = this.state;
+        const daysLabel = [
+            { en: 'sunday', th: 'วันอาทิตย์' },
+            { en: 'monday', th: 'วันจันทร์' },
+            { en: 'tuesday', th: 'วันอังคาร' },
+            { en: 'wednesday', th: 'วันพุธ' },
+            { en: 'thursday', th: 'วันพฤหัสบดี' },
+            { en: 'friday', th: 'วันศุกร์' },
+            { en: 'saturday', th: 'วันเสาร์' },
+        ]
+        if (enrollPlans.length === 0) {
+            return <p>ยังไม่มีรูปแบบการลงทะเบียนถูกเพิ่มในปีการศึกษานี้</p>
+        }
+        else {
+            const enrollPlanList = enrollPlans.map((enrollPlan, i) => {
+                let enrollPlanDetail = enrollPlan.plan.map((day, j) => {
+                    if (day.numOfCourse !== 0) {
+                        let dayLabelTH = null;
+                        for (let i = 0; i < daysLabel.length; i++) {
+                            if (day.day === daysLabel[i].en) {
+                                dayLabelTH = daysLabel[i].th
+                            }
+                        }
+                        return (
+                            <div className="col" key={j}>
+                                <span>{dayLabelTH}</span><br />
+                                <span>{day.numOfCourse} วิชา</span>
+                            </div>
+                        )
+                    }
+                })
+                return (
+                    <li className="list-group-item" key={i}>
+                        <div className="row">
+                            <div className="col-md-10">
+                                <h5>{enrollPlan.name}</h5>
+                                <div className="row">{enrollPlanDetail}</div>
+                            </div>
+                            <div className="col-md-2">
+                                <button className="btn btn-danger fa fa-trash full-width" onClick={this.removeEnrollPlan} value={enrollPlan.name}></button>
+                            </div>
+                        </div>
+
+                    </li>
+                )
+            })
+            return <ul className="list-group admin">{enrollPlanList}</ul>
+        }
+    }
+
+    removeEnrollPlan = (event) => {
+        event.preventDefault();
+        console.log('delete', event.target.value);
+        const { enrollPlans } = this.state;
+        const enrollPlanName = event.target.value;
+        for (let i = 0; i < enrollPlans.length; i++) {
+            if (enrollPlans[i].name === enrollPlanName) {
+                enrollPlans.splice(i, 1);
+            }
+        }
+        this.setState({ enrollPlans: enrollPlans });
+    }
+
+    enrollmentPlansManagement = () => {
+        return (
+            <div>
+                <h3>ตั้งค่ารูปแบบการลงทะเบียน</h3>
+                {this.enrollPlanList()}
+                <hr />
+                {this.enrollmentPlannerForm()}
+            </div>
+        )
+    }
+
+    render() {
+        const { isLoadingComplete, isError, errorMessage } = this.state;
 
         if (!isLoadingComplete) {
-            return <LoadingPage/>
+            return <LoadingPage />
         } else if (isError) {
-            return <ErrorPage errorMessage={errorMessage} btn={'back'}/>
+            return <ErrorPage errorMessage={errorMessage} btn={'back'} />
         } else {
             const { courseYear } = this.state
             return (
                 <div className="body bg-gradient">
                     <div className="wrapper text-left">
-                        <h1>ตั้งค่าระดับชั้น</h1>
-                        <p>ตั้งค่าระดับชั้นเรียนปีการศึกษา {courseYear}</p>
-                        {this.gradeList()}
-                        <form onSubmit={this.addNewGrade} className="mt-3">
-                            <div className="form-config row">
-                                <div className="col-9 form-input-inline form-group">
-                                    <input type="number" pattern="[0-9]*" className="form-control" id="gradeAdd" placeholder="เพิ่มระดับชั้นใหม่" onChange={this.updateInput} value={this.state.gradeAdd} required/>
-                                </div>
-                                <div className="col-3 form-btn-inline">
-                                    <button type="submit" className="btn btn-purple full-width">เพิ่ม</button> 
-                                </div>
-                            </div>
-                        </form>
+                        <h1>ตั้งค่าปีการศึกษา {courseYear}</h1>
+                        <p>ตั้งค่าระดับชั้นเรียนและรูปแบบการลงทะเบียนสำหรับปีการศึกษา {courseYear}</p>
+                        <hr className="mt-4 mb-4" />
+                        {this.gradeConfig()}
+                        <hr className="mt-4 mb-4" />
+                        {this.enrollmentPlansManagement()}
+                        <hr className="mt-4 mb-4" />
                         <div className="mt-2">
                             <button type="submit" className="btn btn-purple" onClick={this.saveGrade}>บันทึก</button>
                             <button onClick={this.goBack} className="btn btn-secondary ml-2">ย้อนกลับ</button>
                         </div>
                     </div>
-                    <Footer/>
+                    <Footer />
                 </div>
             )
         }

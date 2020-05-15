@@ -93,6 +93,44 @@ export function getCourseYearGrades(courseYear = '', courseYearsArr, rejectIfFir
 
 }
 
+export function getCourseYearConfig(courseYear = '', courseYearsArr, rejectIfFirstInitConfig = true) {
+    const db = firebase.firestore();
+    const configRef = db.collection(courseYear).doc('config')
+    return new Promise((resolve, reject) => {
+        if (checkCourseYearExist(courseYear, courseYearsArr)) {
+            configRef.get()
+                .then(doc => {
+                    if (!doc.exists && rejectIfFirstInitConfig) {
+                        const err = `No config of Course Year ${courseYear} has been found in database.`;
+                        reject(err);
+                    } else if (!doc.exists) {
+                        const warn = `No config of Course Year ${courseYear} has been found in database. It will be initialized after saving.`;
+                        console.warn(warn);
+                        resolve({
+                            isFirstInitConfig: true,
+                            config: {grades:[], enrollPlans:[]}
+                        });
+                    } else {
+                        resolve({
+                            isFirstInitConfig: false,
+                            config: doc.data()
+                        });
+                    }
+                })
+                .catch(err => {
+                    const errorMessage = `Firebase failed getting course year config. ${err.message}`;
+                    reject(errorMessage);
+                    console.error(err);
+                })
+        } else {
+            const err = `No course year ${courseYear} has been found in database.`;
+            reject(err);
+        }
+
+    })
+
+}
+
 export function getCourseData(courseYear = '', courseID = '') {
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)

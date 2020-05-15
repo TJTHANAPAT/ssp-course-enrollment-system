@@ -10,7 +10,7 @@ const checkCourseExists = (courseYear, courseID) => {
                 if (!doc.exists) {
                     resolve();
                 } else {
-                    const err = `Course with ID '${courseID}' has already been created in course year ${courseYear} as ${doc.data().courseName}.)`;
+                    const err = `Course with ID '${courseID}' has already been created in course year ${courseYear} as ${doc.data().courseName}.`;
                     reject(err);
                 }
             })
