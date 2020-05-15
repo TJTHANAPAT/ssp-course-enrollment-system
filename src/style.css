@@ -1,0 +1,234 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300&display=swap');
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: 'Kanit', sans-serif;
+}
+
+/*main element*/
+div.body {
+  min-height: 100vh;
+  padding: 50px 25px 25px;
+}
+div.body.body-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 25px;
+}
+.bg-gradient {
+  background: #8360c3;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(51deg, #2ebf91, #8360c3);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(51deg, #2ebf91, #8360c3); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+div.wrapper {
+  width:100%;
+  max-width: 720px;
+  margin: auto;
+  padding: 40px 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+div.wrapper.login-form {
+  padding: 60px 20px;
+  max-width: 400px;
+}
+div.wrapper-no-bg-color {
+  max-width: 800px;
+  margin: auto;
+  padding: 40px 20px;
+}
+footer {
+  text-align: center;
+  color: #ffffff;
+  margin-top: 50px;
+  padding: 0 10px;
+}
+.text-white {
+  color: #ffffff;
+}
+.full-width {
+  width: 100%;
+}
+
+
+/* Course Dashboard */
+.course {
+  margin: 15px 0 !important;
+  padding: 0 !important;
+  background-color: #f8f8f8;
+  border-radius: 10px;
+}
+.course:hover {
+  background-color: #eeeeee;
+}
+.course .detail {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+}
+@media only screen and (max-width: 576px) {
+  .course .detail {
+      padding: 15px 15px 0;
+  }
+}
+.course .course-name {
+  line-height: 1.3;
+  font-size: 20px;
+  font-weight: 500;
+  font-family: 'Kanit', sans-serif;
+}
+.course .course-teacher {
+  line-height: 1.3;
+  margin-top: 5px;
+}
+.course .course-grade {
+  line-height: 1.3;
+  margin-top: 3px;
+}
+
+.course .stat {
+  margin: 0 !important;
+  padding: 10px 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  text-align: center;
+}
+.course .stat-number {
+  font-size: 20px;
+}
+.course .course-btn {
+  padding: 0;
+  padding-left: 15px;
+}
+.course .btn.btn-enroll {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.admin.course .course-btn {
+  padding: 0;
+  padding-left: 10px;
+  display: flex;
+}
+.admin.course .btn.btn-admin {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0px;
+  padding: 10px;
+  font-size: 22px;
+}
+.admin.course .btn.btn-admin.btn-right {
+  border-radius: 0px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+@media only screen and (max-width: 768px) {
+  .course .course-btn {
+    padding: 0;
+  }
+  .course .btn.btn-enroll {
+    border-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+  .admin.course .course-btn {
+    padding: 0;
+  }
+  .admin.course .btn.btn-admin {
+    font-size: 20px;
+  }
+  .admin.course .btn.btn-admin.btn-left {
+    border-radius: 0px;
+    border-bottom-left-radius: 10px;
+  }
+  .admin.course .btn.btn-admin.btn-right {
+    border-radius: 0px;
+    border-bottom-right-radius: 10px;
+  }
+}
+
+.form-config {
+  margin: 0;
+  max-width: 300px;
+}
+.form-config .form-input-inline {
+  padding: 0;
+  padding-right: 10px;
+}
+.form-config .form-btn-inline {
+  padding: 0;
+}
+
+.admin li .list-item-text {
+  margin: 0;
+  float: left;
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+}
+.admin li .list-item-action-panel {
+  float: right;
+  display: flex;
+  align-items: center;
+}
+
+
+
+.btn.btn-wrapper-bottom {
+  margin-top: 15px;
+  width: 100%;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+.btn.btn-landing {
+  color: #ffffff;
+  border: solid #ffffff 1px;
+  border-radius: 0px;
+}
+.btn.btn-landing:hover {
+  background-color: #ffffff;
+  color: #2ebf91;
+}
+
+.btn.btn-green {
+  background: #69cbb7;
+  color: #ffffff;
+}
+.btn.btn-green:hover {
+  background: #5fc5b1;
+}
+.btn.btn-green:focus {
+  box-shadow:0 0 0 .2rem rgba(105, 203, 183, 0.5)
+}
+
+.btn.btn-purple {
+  background: #7c68bf; 
+  color: #ffffff;
+}
+.btn.btn-purple:hover {
+  background: #6f5caf; 
+}
+.btn.btn-purple:focus {
+  box-shadow:0 0 0 .2rem rgba(124, 104, 191, 0.5)
+}
