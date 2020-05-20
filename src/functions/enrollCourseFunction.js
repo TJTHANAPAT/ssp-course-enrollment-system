@@ -17,7 +17,7 @@ export function checkCourseYearAvailable(courseYear = '', systemConfig = {}) {
         } else if (isCourseYearAvailable) {
             resolve();
         } else {
-            reject(`รายวิชาเพิ่มเติมในปีการศึกษา ${courseYear} ยังไม่เปิดให้ลงทะเบียนในขณะนี้`);
+            reject(`ระบบลงทะเบียนรายวิชาเพิ่มเติมสำหรับปีการศึกษา ${courseYear} ยังไม่เปิดให้ลงทะเบียนในขณะนี้`);
         }
     })
 }

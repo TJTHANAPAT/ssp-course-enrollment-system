@@ -13,7 +13,7 @@ import GetStudentData from './GetStudentData';
 import Admin from './admin/Admin';
 import SystemManagement from './admin/SystemManagement';
 import CourseYearConfig from './admin/CourseYearConfig';
-import GradeConfig from './admin/GradeConfig';
+import IndividualCourseYearConfig from './admin/IndividualCourseYearConfig';
 import CreateCourse from './admin/CreateCourse';
 import EditCourse from './admin/EditCourse';
 import ViewCourse from './admin/ViewCourse';
@@ -46,8 +46,8 @@ function App() {
         <Route path='/admin/system/config/year'>
           <CourseYearConfig />
         </Route>
-        <Route path='/admin/config/grade'>
-          <GradeConfig />
+        <Route path='/admin/config/courseyear'>
+          <IndividualCourseYearConfig />
         </Route>
         <Route path='/admin/settings'>
           <Settings />

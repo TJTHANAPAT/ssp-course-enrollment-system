@@ -15,6 +15,7 @@ class CreateCourse extends React.Component {
         courseCapacity: '',
         courseTeacher: '',
         courseGrade: [],
+        courseDay: [],
         gradesArr: [],
         isLoadingComplete: false
     }
@@ -69,17 +70,19 @@ class CreateCourse extends React.Component {
             courseID,
             courseTeacher,
             courseGrade,
+            courseDay,
             courseCapacity
         } = this.state
         const courseData = {
             courseName: courseName,
             courseID: courseID,
             courseGrade: courseGrade,
+            courseDay: courseDay,
             courseTeacher: courseTeacher,
             courseCapacity: parseInt(courseCapacity),
             courseEnrolled: 0
         }
-        if (courseGrade.length !== 0) {
+        if (courseGrade.length !== 0 && courseDay.length !== 0) {
             this.setState({ isLoadingComplete: false });
             createCourse(courseYear, courseData)
                 .then(() => {
@@ -87,13 +90,19 @@ class CreateCourse extends React.Component {
                         courseName: '',
                         courseID: '',
                         courseGrade: [],
+                        courseDay: [],
                         courseCapacity: '',
                         courseTeacher: '',
                         isLoadingComplete: true
                     });
-                    let checkboxes = document.getElementsByName('courseGradeCheckBox')
-                    for (let i = 0; i < checkboxes.length; i++) {
-                        const checkbox = checkboxes[i];
+                    let courseGradeCheckBoxes = document.getElementsByName('courseGradeCheckBox')
+                    for (let i = 0; i < courseGradeCheckBoxes.length; i++) {
+                        const checkbox = courseGradeCheckBoxes[i];
+                        checkbox.checked = false;
+                    }
+                    let courseDayCheckBoxes = document.getElementsByName('courseDayCheckBox')
+                    for (let i = 0; i < courseDayCheckBoxes.length; i++) {
+                        const checkbox = courseDayCheckBoxes[i];
                         checkbox.checked = false;
                     }
                     alert(`รายวิชา ${courseID} ${courseName} ถูกเพิ่มลงในปีการศึกษา ${courseYear} เรียบร้อยแล้ว`);
@@ -107,11 +116,11 @@ class CreateCourse extends React.Component {
                     })
                 })
         } else {
-            alert('ต้องมีอย่างน้อยหนึ่งชั้นเรียนสำหรับรายวิชานี้');
+            alert('ต้องมีอย่างน้อยหนึ่งชั้นเรียนและหนึ่งวันสำหรับรายวิชานี้');
         }
     }
 
-    updateCourseGrade = (event) => {
+    handleChangeCourseGrade = (event) => {
         const courseGradeArr = this.state.courseGrade
         if (event.target.checked) {
             console.log(`Checked Grade ${event.target.value}`)
@@ -130,7 +139,7 @@ class CreateCourse extends React.Component {
         console.log('Current Course Grade: ', this.state.courseGrade);
     }
 
-    uncheckAll = (event) => {
+    uncheckAllGrade = (event) => {
         event.preventDefault();
         let checkboxes = document.getElementsByName('courseGradeCheckBox')
         for (let i = 0; i < checkboxes.length; i++) {
@@ -148,7 +157,7 @@ class CreateCourse extends React.Component {
         let gradeSelector = gradesArr.map((grade, i) => {
             return (
                 <div className="form-check" key={i}>
-                    <input className="form-check-input" type="checkbox" name="courseGradeCheckBox" value={grade} id={`grade-${grade}`} onChange={this.updateCourseGrade} />
+                    <input className="form-check-input" type="checkbox" name="courseGradeCheckBox" value={grade} id={`grade-${grade}`} onChange={this.handleChangeCourseGrade} />
                     <label className="form-check-label" htmlFor={`grade-${grade}`}>
                         มัธยมศึกษาปีที่ {grade}
                     </label>
@@ -158,7 +167,90 @@ class CreateCourse extends React.Component {
         return (
             <div>
                 {gradeSelector}
-                <button onClick={this.uncheckAll} className="btn btn-green btn-sm mt-1">ยกเลิกการเลือกทั้งหมด</button>
+                <button onClick={this.uncheckAllGrade} className="btn btn-green btn-sm mt-1">ยกเลิกการเลือกทั้งหมด</button>
+            </div>
+        );
+    }
+
+    handleChangeCourseDay = (event) => {
+        const courseDayArr = this.state.courseDay
+        if (event.target.checked) {
+            console.log(`Checked Day ${event.target.value}`)
+            courseDayArr.push(event.target.value)
+            let courseDayArrSorted = this.sortCourseDayArr(courseDayArr);
+            this.setState({ courseDay: courseDayArrSorted })
+            console.log('Current Course Day: ', courseDayArrSorted);
+        } else {
+            console.log(`Unchecked Day ${event.target.value}`)
+            for (var i = 0; i < courseDayArr.length; i++) {
+                if (courseDayArr[i] === event.target.value) {
+                    courseDayArr.splice(i, 1);
+                }
+            }
+            this.setState({ courseDay: courseDayArr })
+            console.log('Current Course Day: ', this.state.courseDay);
+        }
+    }
+
+    sortCourseDayArr = (courseDayArr) => {
+        const daysArr = [
+            'sunday',
+            'monday', 
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday'
+        ]
+        let courseDayArrSorted = []
+        for (let i = 0; i < daysArr.length; i++) {
+            for (let j = 0; j < courseDayArr.length; j++) {
+                if (daysArr[i] === courseDayArr[j]) {
+                    courseDayArrSorted.push(courseDayArr[j])
+                }
+            }
+        }
+        return courseDayArrSorted
+    }
+
+    uncheckAllDay = (event) => {
+        event.preventDefault();
+        console.log(this.state.courseDay)
+        let checkboxes = document.getElementsByName('courseDayCheckBox')
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            checkbox.checked = false;
+        }
+        const courseDay = [];
+        this.setState({ courseDay: courseDay });
+        console.log('Uncheck All');
+        console.log('Current Course Grade: ', courseDay);
+    }
+
+    daySelector = () => {
+        const daysArr = [
+            { en: 'sunday', th: 'วันอาทิตย์' },
+            { en: 'monday', th: 'วันจันทร์' },
+            { en: 'tuesday', th: 'วันอังคาร' },
+            { en: 'wednesday', th: 'วันพุธ' },
+            { en: 'thursday', th: 'วันพฤหัสบดี' },
+            { en: 'friday', th: 'วันศุกร์' },
+            { en: 'saturday', th: 'วันเสาร์' },
+        ]
+        let daySelector = daysArr.map((day, i) => {
+            return (
+                <div className="form-check" key={i}>
+                    <input className="form-check-input" type="checkbox" name="courseDayCheckBox" value={day.en} id={`day-${day.en}`} onChange={this.handleChangeCourseDay} />
+                    <label className="form-check-label" htmlFor={`day-${day.en}`}>
+                        {day.th}
+                    </label>
+                </div>
+            )
+        })
+        return (
+            <div>
+                {daySelector}
+                <button onClick={this.uncheckAllDay} className="btn btn-green btn-sm mt-1">ยกเลิกการเลือกทั้งหมด</button>
             </div>
         );
     }
@@ -180,8 +272,13 @@ class CreateCourse extends React.Component {
                 </div>
                 <div className="form-group">
                     <label htmlFor="courseGrade">ระดับชั้น</label><br />
-                    <i>รายวิชานี้สำหรับนักเรียนในชั้น</i>
+                    <i>รายวิชานี้สำหรับนักเรียนในชั้น...</i>
                     {this.gradeSelector()}
+                </div>
+                <div className="form-group">
+                    <label htmlFor="courseDay">วันทำการเรียนการสอน</label><br />
+                    <i>รายวิชานี้ทำการเรียนการสอนในวัน...</i>
+                    {this.daySelector()}
                 </div>
                 <div className="form-group">
                     <label htmlFor="courseCapacity">จำนวนรับสมัคร</label>

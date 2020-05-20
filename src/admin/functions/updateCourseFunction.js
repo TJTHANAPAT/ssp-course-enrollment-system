@@ -7,11 +7,13 @@ const updateCourseData = (courseYear, courseData) => {
         courseID,
         courseTeacher,
         courseGrade,
+        courseDay,
         courseCapacity
     } = courseData
     const courseDataUpdate = {
         courseName: courseName,
         courseGrade: courseGrade,
+        courseDay:courseDay,
         courseTeacher: courseTeacher,
         courseCapacity: parseInt(courseCapacity),
     }

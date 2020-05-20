@@ -14,18 +14,18 @@ class SystemManagement extends React.Component {
     state = {
         courses: [],
 
-        isLoadingComplete:false,
-        isError:false,
-        errorMessage:'',
-        isFirstInitSystem:false,
+        isLoadingComplete: false,
+        isError: false,
+        errorMessage: '',
+        isFirstInitSystem: false,
 
-        courseYearArr:[],
-        selectedCourseYear:''
+        courseYearArr: [],
+        selectedCourseYear: ''
     }
 
     componentDidMount = () => {
         auth.checkAuthState()
-            .then( res => {
+            .then(res => {
                 const user = res.user;
                 const isLogin = res.isLogin;
                 this.setState({
@@ -34,7 +34,7 @@ class SystemManagement extends React.Component {
                 })
                 return admin.getSystemConfig(false)
             })
-            .then( res => {
+            .then(res => {
                 const isFirstInitSystem = res.isFirstInitSystem;
                 if (!isFirstInitSystem) {
                     const systemConfig = res.systemConfig;
@@ -50,7 +50,7 @@ class SystemManagement extends React.Component {
                 }
                 console.log(res);
             })
-            .catch( err => {
+            .catch(err => {
                 console.error(err);
                 this.setState({
                     isLoadingComplete: true,
@@ -59,7 +59,7 @@ class SystemManagement extends React.Component {
                 })
             })
     }
-    
+
     getCoursesData = (courseYear) => {
         const db = firebase.firestore();
         const courseRef = db.collection(courseYear).doc('course').collection('course');
@@ -78,7 +78,7 @@ class SystemManagement extends React.Component {
 
     courseDashboard = (coursesData) => {
         const courseYear = this.state.selectedCourseYear;
-        if (coursesData.length === 0){
+        if (coursesData.length === 0) {
             return (
                 <div className="mt-4 text-center">
                     <p>ยังไม่มีรายวิชาที่ถูกเพิ่มในปีการศึกษา {courseYear}</p>
@@ -102,20 +102,41 @@ class SystemManagement extends React.Component {
                         </div>
                     )
                 }
+                let courseDayArr = course.courseDay !== undefined ? course.courseDay : ['not set']
+                const daysLabel = [
+                    { en: 'sunday', th: 'วันอาทิตย์' },
+                    { en: 'monday', th: 'วันจันทร์' },
+                    { en: 'tuesday', th: 'วันอังคาร' },
+                    { en: 'wednesday', th: 'วันพุธ' },
+                    { en: 'thursday', th: 'วันพฤหัสบดี' },
+                    { en: 'friday', th: 'วันศุกร์' },
+                    { en: 'saturday', th: 'วันเสาร์' },
+                    { en: 'not set', th: 'ยังไม่ได้ตั้งค่า' }
+                ]
+                let courseDayTH = []
+                for (let i = 0; i < courseDayArr.length; i++) {
+                    for (let j = 0; j < daysLabel.length; j++) {
+                        if (courseDayArr[i] === daysLabel[j].en) {
+                            courseDayTH.push(daysLabel[j].th)
+                        }
+                    }
+                }
+
                 return (
                     <div className="course row admin" key={i}>
                         <div className="col-md-9">
                             <div className="row align-items-center">
                                 <div className="detail col-sm-6">
                                     <span className="course-name">{course.courseID} {course.courseName}</span>
-                                    <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="false"></i> {course.courseTeacher}</span>
-                                    <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="false"></i> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span> 
+                                    <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="false" /> {course.courseTeacher}</span>
+                                    <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="false" /> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
+                                    <span className="course-day"><i className="fa fa-fw fa-calendar-check-o" aria-hidden="false" /> {courseDayTH.join(', ')}</span>
                                 </div>
                                 <div className="col-sm-6">
                                     <div className="row align-items-center">
-                                        {stat('รับสมัคร',course.courseCapacity)}
-                                        {stat('สมัครแล้ว',course.courseEnrolled)}
-                                        {stat('ที่ว่าง',courseStatus)}
+                                        {stat('รับสมัคร', course.courseCapacity)}
+                                        {stat('สมัครแล้ว', course.courseEnrolled)}
+                                        {stat('ที่ว่าง', courseStatus)}
                                     </div>
                                 </div>
                             </div>
@@ -135,7 +156,7 @@ class SystemManagement extends React.Component {
         const { selectCourseYear } = this.state;
         const newSelectCourseYear = event.target.value;
         if (selectCourseYear !== newSelectCourseYear) {
-            this.setState({ selectedCourseYear:newSelectCourseYear });
+            this.setState({ selectedCourseYear: newSelectCourseYear });
             this.getCoursesData(newSelectCourseYear);
         }
     }
@@ -155,7 +176,7 @@ class SystemManagement extends React.Component {
     signOut = () => {
         this.setState({ isLoadingComplete: false });
         auth.signOut()
-            .then( () => {
+            .then(() => {
                 this.setState({
                     isLoadingComplete: true,
                     isLogin: false
@@ -163,7 +184,7 @@ class SystemManagement extends React.Component {
             })
     }
 
-    render(){
+    render() {
         const {
             isLoadingComplete,
             isLogin,
@@ -171,11 +192,11 @@ class SystemManagement extends React.Component {
             isError,
             errorMessage
         } = this.state;
-        
-        if (!isLoadingComplete){
-            return <LoadingPage/>
+
+        if (!isLoadingComplete) {
+            return <LoadingPage />
         } else if (isError) {
-            return <ErrorPage errorMessage={errorMessage} btn={'none'}/>
+            return <ErrorPage errorMessage={errorMessage} btn={'none'} />
         } else if (isLogin) {
             if (isFirstInitSystem) {
                 return (
@@ -190,7 +211,7 @@ class SystemManagement extends React.Component {
                                 <button className="btn btn-green m-1" onClick={this.signOut}><i className="fa fa-sign-out"></i> Logout</button>
                             </div>
                         </div>
-                        <Footer/>
+                        <Footer />
                     </div>
                 )
             } else {
@@ -206,22 +227,22 @@ class SystemManagement extends React.Component {
                             {this.courseDashboard(courses)}
                             <div>
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/createcourse?courseYear=${selectedCourseYear}`}>เพิ่มรายวิชาใหม่</a>
-                                <a role="button" className="btn btn-purple m-1" href={`/admin/config/grade?courseYear=${selectedCourseYear}`}>ตั้งค่าระดับชั้น</a>
+                                <a role="button" className="btn btn-purple m-1" href={`/admin/config/courseyear?courseYear=${selectedCourseYear}`}>ตั้งค่าปีการศึกษา {selectedCourseYear}</a>
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/managestudent?courseYear=${selectedCourseYear}`}>การจัดการนักเรียน</a>
                             </div>
-                            <hr/>
+                            <hr />
                             <div>
                                 <button className="btn btn-green m-1" onClick={this.signOut}><i className="fa fa-sign-out"></i> ลงชื่อออก</button>
                                 <a role="button" className="btn btn-green m-1" href="/admin/system/config/year">ตั้งค่าปีการศึกษา</a>
                                 <a role="button" className="btn btn-green m-1" href="/admin/settings">ตั้งค่าระบบ</a>
                             </div>
                         </div>
-                        <Footer/>
+                        <Footer />
                     </div>
                 )
             }
         } else {
-            return <Admin/>
+            return <Admin />
         }
     }
 }
