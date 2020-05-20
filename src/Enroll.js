@@ -130,7 +130,7 @@ class Enroll extends React.Component {
                     <label htmlFor="studentID">เลขประจำตัวนักเรียน</label>
                     <input type="number" pattern="[0-9]*" className="form-control" id="studentID" placeholder="เลขประจำตัวนักเรียน" onChange={updateInput} required />
                 </div>
-                <div class="form-row">
+                <div className="form-row">
                     <div className="col-sm-2 form-group">
                         <label htmlFor="nameTitle">คำนำหน้า</label>
                         <select id="nameTitle" className="form-control" onChange={updateInput} defaultValue="" required>

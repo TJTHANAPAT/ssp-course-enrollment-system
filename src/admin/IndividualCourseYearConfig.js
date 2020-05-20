@@ -318,6 +318,8 @@ class GradeConfig extends React.Component {
                                 <span>{day.numOfCourse} วิชา</span>
                             </div>
                         )
+                    } else {
+                        return null
                     }
                 })
                 return (

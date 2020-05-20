@@ -113,6 +113,7 @@ class ViewCourse extends React.Component {
                 Roll: student.studentRoll
             }
             studentsArrFormated.push(studentDataFormated);
+            return null;
         })
         this.exportCSVFile(studentsArrFormated, fileTitle);
     }
