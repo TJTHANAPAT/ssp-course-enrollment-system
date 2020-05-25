@@ -102,7 +102,6 @@ class SystemManagement extends React.Component {
                         </div>
                     )
                 }
-                let courseDayArr = course.courseDay !== undefined ? course.courseDay : ['not set']
                 const daysLabel = [
                     { en: 'sunday', th: 'วันอาทิตย์' },
                     { en: 'monday', th: 'วันจันทร์' },
@@ -110,18 +109,14 @@ class SystemManagement extends React.Component {
                     { en: 'wednesday', th: 'วันพุธ' },
                     { en: 'thursday', th: 'วันพฤหัสบดี' },
                     { en: 'friday', th: 'วันศุกร์' },
-                    { en: 'saturday', th: 'วันเสาร์' },
-                    { en: 'not set', th: 'ยังไม่ได้ตั้งค่า' }
+                    { en: 'saturday', th: 'วันเสาร์' }
                 ]
-                let courseDayTH = []
-                for (let i = 0; i < courseDayArr.length; i++) {
-                    for (let j = 0; j < daysLabel.length; j++) {
-                        if (courseDayArr[i] === daysLabel[j].en) {
-                            courseDayTH.push(daysLabel[j].th)
-                        }
+                let courseDayTH = null;
+                for (let i = 0; i < daysLabel.length; i++) {
+                    if (course.courseDay === daysLabel[i].en) {
+                        courseDayTH = daysLabel[i].th
                     }
                 }
-
                 return (
                     <div className="course row admin" key={i}>
                         <div className="col-md-9">
@@ -130,7 +125,7 @@ class SystemManagement extends React.Component {
                                     <span className="course-name">{course.courseID} {course.courseName}</span>
                                     <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="false" /> {course.courseTeacher}</span>
                                     <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="false" /> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
-                                    <span className="course-day"><i className="fa fa-fw fa-calendar-check-o" aria-hidden="false" /> {courseDayTH.join(', ')}</span>
+                                    <span className="course-day"><i className="fa fa-fw fa-calendar-check-o" aria-hidden="false" /> {courseDayTH}</span>
                                 </div>
                                 <div className="col-sm-6">
                                     <div className="row align-items-center">

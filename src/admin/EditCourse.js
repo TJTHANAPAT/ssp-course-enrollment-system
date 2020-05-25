@@ -28,16 +28,14 @@ class EditCourse extends React.Component {
                 return system.getCourseData(courseYear, courseID);
             })
             .then(course => {
-                const courseDay = course.courseDay !== undefined ? course.courseDay : []
                 this.setState({
                     courseName: course.courseName,
                     courseID: course.courseID,
                     courseCapacity: course.courseCapacity,
                     courseTeacher: course.courseTeacher,
                     courseGrade: course.courseGrade,
-                    courseDay: courseDay
+                    courseDay: course.courseDay
                 })
-                console.log(courseDay)
                 return system.getSystemConfig();
             })
             .then(res => {
@@ -51,7 +49,6 @@ class EditCourse extends React.Component {
                     isLoadingComplete: true
                 })
                 this.setCheckBoxGrade();
-                this.setCourseDayCheckBox();
             })
             .catch(err => {
                 console.error(err);
@@ -101,7 +98,6 @@ class EditCourse extends React.Component {
                         isLoadingComplete: true
                     });
                     this.setCheckBoxGrade();
-                    this.setCourseDayCheckBox();
                     alert(`บันทึกข้อมูลการแก้ไขรายวิชา ${courseID} ${courseName} สำเร็จ`);
                 })
                 .catch(err => {
@@ -113,7 +109,7 @@ class EditCourse extends React.Component {
                     })
                 })
         } else {
-            alert('ต้องมีอย่างน้อยหนึ่งชั้นเรียนและหนึ่งวันสำหรับรายวิชานี้');
+            alert('ต้องมีอย่างน้อยหนึ่งชั้นเรียนสำหรับรายวิชานี้');
         }
     }
     UpdateCourseForm = () => {
@@ -137,17 +133,13 @@ class EditCourse extends React.Component {
                     {this.GradeSelector()}
                 </div>
                 <div className="form-group">
-                    <label htmlFor="courseDay">วันทำการเรียนการสอน</label><br />
-                    <i>รายวิชานี้ทำการเรียนการสอนในวัน...</i>
+                    <label htmlFor="courseDay">วันที่ทำการเรียนการสอน</label><br />
                     {this.daySelector()}
                 </div>
-
-
                 <div className="form-group">
                     <label htmlFor="courseCapacity">จำนวนรับสมัคร</label>
                     <input type="number" pattern="[0-9]*" className="form-control" id="courseCapacity" placeholder="จำนวนรับสมัคร" onChange={this.updateInput} value={this.state.courseCapacity} required />
                 </div>
-
                 <button type="submit" className="btn btn-purple">บันทึก</button>
                 <button onClick={this.initDeleteCourse} className="btn btn-danger ml-2">ลบทิ้ง</button>
                 <button onClick={this.goBack} className="btn btn-secondary ml-2">ย้อนกลับ</button>
@@ -285,35 +277,15 @@ class EditCourse extends React.Component {
             { en: 'friday', th: 'วันศุกร์' },
             { en: 'saturday', th: 'วันเสาร์' },
         ]
-        let daySelector = daysArr.map((day, i) => {
-            return (
-                <div className="form-check" key={i}>
-                    <input className="form-check-input" type="checkbox" name="courseDayCheckBox" value={day.en} id={`day-${day.en}`} onChange={this.handleChangeCourseDay} />
-                    <label className="form-check-label" htmlFor={`day-${day.en}`}>
-                        {day.th}
-                    </label>
-                </div>
-            )
+        let dayOptions = daysArr.map((day, i) => {
+            return <option key={i} value={day.en}>{day.th}</option>
         })
         return (
-            <div>
-                {daySelector}
-                <button onClick={this.uncheckAllDay} className="btn btn-green btn-sm mt-1">ยกเลิกการเลือกทั้งหมด</button>
-            </div>
+            <select id="courseDay" className="form-control" onChange={this.updateInput} defaultValue={this.state.courseDay} required>
+                <option value="" disabled>เลือก...</option>
+                {dayOptions}
+            </select>
         );
-    }
-    setCourseDayCheckBox = () => {
-        const courseDayArr = this.state.courseDay;
-        let checkboxes = document.getElementsByName('courseDayCheckBox')
-        for (let i = 0; i < courseDayArr.length; i++) {
-            const day = courseDayArr[i];
-            for (let j = 0; j < checkboxes.length; j++) {
-                const checkbox = checkboxes[j];
-                if (day === checkbox.value) {
-                    checkbox.checked = true;
-                }
-            }
-        }
     }
 
     // Functions for deleting course data.

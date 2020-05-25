@@ -195,7 +195,7 @@ class CreateCourse extends React.Component {
     sortCourseDayArr = (courseDayArr) => {
         const daysArr = [
             'sunday',
-            'monday', 
+            'monday',
             'tuesday',
             'wednesday',
             'thursday',
@@ -237,21 +237,14 @@ class CreateCourse extends React.Component {
             { en: 'friday', th: 'วันศุกร์' },
             { en: 'saturday', th: 'วันเสาร์' },
         ]
-        let daySelector = daysArr.map((day, i) => {
-            return (
-                <div className="form-check" key={i}>
-                    <input className="form-check-input" type="checkbox" name="courseDayCheckBox" value={day.en} id={`day-${day.en}`} onChange={this.handleChangeCourseDay} />
-                    <label className="form-check-label" htmlFor={`day-${day.en}`}>
-                        {day.th}
-                    </label>
-                </div>
-            )
+        let dayOptions = daysArr.map((day, i) => {
+            return <option key={i} value={day.en}>{day.th}</option>
         })
         return (
-            <div>
-                {daySelector}
-                <button onClick={this.uncheckAllDay} className="btn btn-green btn-sm mt-1">ยกเลิกการเลือกทั้งหมด</button>
-            </div>
+            <select id="courseDay" className="form-control" onChange={this.updateInput} defaultValue="" required>
+                <option value="" disabled>เลือก...</option>
+                {dayOptions}
+            </select>
         );
     }
 
@@ -276,8 +269,7 @@ class CreateCourse extends React.Component {
                     {this.gradeSelector()}
                 </div>
                 <div className="form-group">
-                    <label htmlFor="courseDay">วันทำการเรียนการสอน</label><br />
-                    <i>รายวิชานี้ทำการเรียนการสอนในวัน...</i>
+                    <label htmlFor="courseDay">วันที่ทำการเรียนการสอน</label>
                     {this.daySelector()}
                 </div>
                 <div className="form-group">
