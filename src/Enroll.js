@@ -154,7 +154,7 @@ class Enroll extends React.Component {
                     <label htmlFor="studentGrade">ชั้น</label>
                     {gradeSelector()}
                 </div>
-                <div class="form-row">
+                <div className="form-row">
                     <div className="col-6 form-group">
                         <label htmlFor="studentClass">ห้องเรียน</label>
                         <input type="number" pattern="[0-9]*" className="form-control" id="studentClass" placeholder="ห้องเรียน" onChange={updateInput} required />

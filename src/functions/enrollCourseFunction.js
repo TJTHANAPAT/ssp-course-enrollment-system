@@ -34,6 +34,29 @@ export function checkCourseAvailable(courseYear = '', courseData = {}) {
     })
 }
 
+export function getCoursesData(courseYear = '') {
+    const db = firebase.firestore();
+    const courseRef = db.collection(courseYear).doc('course').collection('course');
+    return new Promise((resolve, reject) => {
+        courseRef.get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    const err = `ยังไม่มีรายวิชาถูกเพิ่มในปีการศึกษา ${courseYear}`
+                    reject(err);
+                }
+                let coursesArr = [];
+                snapshot.forEach(doc => {
+                    coursesArr.push(doc.data());
+                });
+                resolve(coursesArr);
+            })
+            .catch(err => {
+                const errorMessage = `Error getting courses data in course year ${courseYear} from database. ${err.message}`;
+                reject(errorMessage);
+            });
+    })
+}
+
 const getCourseData = (courseYear = '', courseID = '') => {
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)

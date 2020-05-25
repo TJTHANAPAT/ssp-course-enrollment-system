@@ -8,6 +8,7 @@ import {
 import Homepage from './Homepage';
 import Dashboard from './CourseDashboard';
 import Enroll from './Enroll';
+import EnrollWithPlan from './EnrollWithPlan';
 import GetStudentData from './GetStudentData';
 
 import Admin from './admin/Admin';
@@ -30,6 +31,9 @@ function App() {
         </Route>
         <Route path='/course/enroll'>
           <Enroll />
+        </Route>
+        <Route path='/course/enrollwithplan'>
+          <EnrollWithPlan />
         </Route>
         <Route path='/course'>
           <Dashboard />

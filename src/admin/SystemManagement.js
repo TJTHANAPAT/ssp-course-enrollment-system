@@ -8,7 +8,7 @@ import ErrorPage from '../components/ErrorPage';
 import Admin from './Admin';
 
 import * as auth from './functions/authenticationFuctions';
-import * as admin from '../functions/systemFunctions';
+import * as system from '../functions/systemFunctions';
 
 class SystemManagement extends React.Component {
     state = {
@@ -32,7 +32,7 @@ class SystemManagement extends React.Component {
                     currentUser: user,
                     isLogin: isLogin,
                 })
-                return admin.getSystemConfig(false)
+                return system.getSystemConfig(false)
             })
             .then(res => {
                 const isFirstInitSystem = res.isFirstInitSystem;
@@ -102,21 +102,6 @@ class SystemManagement extends React.Component {
                         </div>
                     )
                 }
-                const daysLabel = [
-                    { en: 'sunday', th: 'วันอาทิตย์' },
-                    { en: 'monday', th: 'วันจันทร์' },
-                    { en: 'tuesday', th: 'วันอังคาร' },
-                    { en: 'wednesday', th: 'วันพุธ' },
-                    { en: 'thursday', th: 'วันพฤหัสบดี' },
-                    { en: 'friday', th: 'วันศุกร์' },
-                    { en: 'saturday', th: 'วันเสาร์' }
-                ]
-                let courseDayTH = null;
-                for (let i = 0; i < daysLabel.length; i++) {
-                    if (course.courseDay === daysLabel[i].en) {
-                        courseDayTH = daysLabel[i].th
-                    }
-                }
                 return (
                     <div className="course row admin" key={i}>
                         <div className="col-md-9">
@@ -125,7 +110,7 @@ class SystemManagement extends React.Component {
                                     <span className="course-name">{course.courseID} {course.courseName}</span>
                                     <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="false" /> {course.courseTeacher}</span>
                                     <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="false" /> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
-                                    <span className="course-day"><i className="fa fa-fw fa-calendar-check-o" aria-hidden="false" /> {courseDayTH}</span>
+                                    <span className="course-day"><i className="fa fa-fw fa-calendar-check-o" aria-hidden="false" /> {system.translateDayToThai(course.courseDay)}</span>
                                 </div>
                                 <div className="col-sm-6">
                                     <div className="row align-items-center">

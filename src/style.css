@@ -196,7 +196,56 @@ footer {
   align-items: center;
 }
 
-
+.enroll-selector:hover {
+  background-color: #f8f8f8;
+}
+.enroll-selector-group  {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+.enroll-selector .enroll-selector-check-input {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 20px;
+}
+.enroll-selector input[type='checkbox'],input[type='radio'] {
+  margin: 0;
+} 
+.enroll-selector .enroll-selector-label {
+  margin-left: 10px;
+  width: 100%;
+}
+.course-selector .detail {
+  display: flex;
+  flex-direction: column;
+  padding: 0 15px;
+}
+.course-selector .course-name {
+  line-height: 1.3;
+  font-size: 20px;
+  font-weight: 500;
+  font-family: 'Kanit', sans-serif;
+}
+.course-selector .course-teacher,.course-grade,.course-day {
+  line-height: 1.3;
+  margin-top: 3px;
+}
+.course-selector .stat {
+  margin: 0 !important;
+  padding: 10px 0 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  text-align: center;
+}
+.course-selector .stat-number {
+  font-size: 20px;
+}
 
 .btn.btn-wrapper-bottom {
   margin-top: 15px;

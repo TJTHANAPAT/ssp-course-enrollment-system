@@ -108,7 +108,7 @@ export function getCourseYearConfig(courseYear = '', courseYearsArr, rejectIfFir
                         console.warn(warn);
                         resolve({
                             isFirstInitConfig: true,
-                            config: {grades:[], enrollPlans:[]}
+                            config: { grades: [], enrollPlans: [] }
                         });
                     } else {
                         resolve({
@@ -150,4 +150,23 @@ export function getCourseData(courseYear = '', courseID = '') {
                 reject(errorMessage);
             })
     })
+}
+
+export function translateDayToThai(day = '') {
+    const daysLabel = [
+        { en: 'sunday', th: 'วันอาทิตย์' },
+        { en: 'monday', th: 'วันจันทร์' },
+        { en: 'tuesday', th: 'วันอังคาร' },
+        { en: 'wednesday', th: 'วันพุธ' },
+        { en: 'thursday', th: 'วันพฤหัสบดี' },
+        { en: 'friday', th: 'วันศุกร์' },
+        { en: 'saturday', th: 'วันเสาร์' },
+    ]
+    let dayLabelTH = '';
+    for (let i = 0; i < daysLabel.length; i++) {
+        if (day === daysLabel[i].en) {
+            dayLabelTH = daysLabel[i].th
+        }
+    }
+    return dayLabelTH;
 }
