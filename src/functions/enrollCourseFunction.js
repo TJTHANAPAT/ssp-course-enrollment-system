@@ -43,12 +43,13 @@ export function getCoursesData(courseYear = '') {
                 if (snapshot.empty) {
                     const err = `ยังไม่มีรายวิชาถูกเพิ่มในปีการศึกษา ${courseYear}`
                     reject(err);
+                } else {
+                    let coursesArr = [];
+                    snapshot.forEach(doc => {
+                        coursesArr.push(doc.data());
+                    });
+                    resolve(coursesArr);
                 }
-                let coursesArr = [];
-                snapshot.forEach(doc => {
-                    coursesArr.push(doc.data());
-                });
-                resolve(coursesArr);
             })
             .catch(err => {
                 const errorMessage = `Error getting courses data in course year ${courseYear} from database. ${err.message}`;

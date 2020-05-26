@@ -1,4 +1,6 @@
 import React from 'react';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 import * as system from './functions/systemFunctions';
 import * as enroll from './functions/enrollCourseFunction'
 import LoadingPage from './components/LoadingPage';
@@ -7,53 +9,37 @@ import Footer from './components/Footer';
 
 class EnrollWithPlan extends React.Component {
     state = {
-        courses: [],
-        coursesData: [],
         isLoadingComplete: false,
         isError: false,
-        studentEnrollPlan: '',
         isAllowSelectCourses: false
     }
-    componentDidMount = () => {
-        system.getSystemConfig()
-            .then(res => {
-                const systemConfig = res.systemConfig;
-                const courseYear = systemConfig.currentCourseYear;
-                this.setState({
-                    courseYear: courseYear,
-                    systemConfig: systemConfig
-                });
-                return enroll.checkCourseYearAvailable(courseYear, systemConfig);
-            })
-            .then(() => {
-                const { systemConfig, courseYear } = this.state;
-                const courseYearsArr = systemConfig.courseYears;
-                return system.getCourseYearConfig(courseYear, courseYearsArr)
-            })
-            .then(res => {
-                const { courseYear } = this.state;
-                const courseYearConfig = res.config;
-                this.setState({
-                    courseGrade: courseYearConfig.grades,
-                    courseYearConfig: courseYearConfig
-                });
-                return enroll.getCoursesData(courseYear);
-            })
-            .then(res => {
-                const coursesData = res;
-                this.setState({
-                    coursesData: coursesData,
-                    isLoadingComplete: true
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                });
-            })
+
+    async componentDidMount() {
+        try {
+            const getSystemConfig = await system.getSystemConfig();
+            const systemConfig = getSystemConfig.systemConfig;
+            const courseYear = systemConfig.currentCourseYear;
+            const courseYearsArr = systemConfig.courseYears;
+            await enroll.checkCourseYearAvailable(courseYear, systemConfig);
+            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, courseYearsArr);
+            const courseYearConfig = getCourseYearConfig.config;
+            const coursesData = await enroll.getCoursesData(courseYear);
+            this.setState({
+                isLoadingComplete: true,
+                courseYear: courseYear,
+                courseYearConfig: courseYearConfig,
+                courseGrade: courseYearConfig.grades,
+                coursesData: coursesData
+            });
+        }
+        catch (err) {
+            console.error(err)
+            this.setState({
+                isLoadingComplete: true,
+                isError: true,
+                errorMessage: err
+            });
+        }
     }
 
     goBack = (event) => {
@@ -65,6 +51,29 @@ class EnrollWithPlan extends React.Component {
         this.setState({
             [event.target.id]: event.target.value
         });
+    }
+
+    getStudentDataNew = () => {
+        const db = firebase.firestore();
+        const studentRef = db.collection('2020/student/student').where('example.monday', 'array-contains', 'ว201')
+        return new Promise((resolve, reject) => {
+            studentRef.get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        const err = `empty`
+                        reject(err);
+                    } else {
+                        snapshot.forEach(doc => {
+                            console.log(doc.id, doc.data());
+                        });
+                        resolve();
+                    }
+                })
+                .catch(err => {
+                    console.error(err)
+                    reject(err.message);
+                });
+        })
     }
 
     enrollPlanSelector = () => {
@@ -301,7 +310,7 @@ class EnrollWithPlan extends React.Component {
                 event.target.checked = false;
                 alert(`ไม่สามารถเลือกรายวิชาเพิ่มได้ คุณสามารถเลือกได้เพียง ${limitNumOfEnrolledCourse} รายวิชาสำหรับ${system.translateDayToThai(courseDay)}`)
             }
-            
+
         } else {
             for (var i = 0; i < studentEnrolledCourse[courseDay].length; i++) {
                 if (courseID === studentEnrolledCourse[courseDay][i]) {
@@ -310,7 +319,7 @@ class EnrollWithPlan extends React.Component {
             }
             this.setState({ studentEnrolledCourse: studentEnrolledCourse });
         }
-        console.log('Current Student Selected Courses: ',this.state.studentEnrolledCourse)
+        console.log('Current Student Selected Courses: ', this.state.studentEnrolledCourse)
 
     }
 
