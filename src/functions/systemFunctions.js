@@ -170,3 +170,14 @@ export function translateDayToThai(day = '') {
     }
     return dayLabelTH;
 }
+
+const daysArr = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday'
+]
+export { daysArr };

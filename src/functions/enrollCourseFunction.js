@@ -162,13 +162,14 @@ const checkStudentGrade = (studentData, courseYear, courseData) => {
     })
 }
 
-const checkStudentID = (courseYear, studentID) => {
+export function checkStudentID(courseYear, studentID) {
     const db = firebase.firestore();
     const studentRef = db.collection(courseYear).doc('student').collection('student').doc(studentID);
     return new Promise((resolve, reject) => {
         studentRef.get()
             .then(doc => {
                 if (!doc.exists) {
+                    console.log('This studentID is valid.')
                     resolve();
                 } else {
                     const student = doc.data();
@@ -184,7 +185,7 @@ const checkStudentID = (courseYear, studentID) => {
     })
 }
 
-const updatingCourseEnrolled = (courseYear, courseData) => {
+export function updateCourseEnrolled (courseYear, courseData) {
     const course = courseData;
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(course.courseID);
@@ -209,7 +210,7 @@ const addStudentData = (courseYear, courseData, studentData) => {
     return new Promise((resolve, reject) => {
         studentRef.set(studentData)
             .then(() => {
-                return updatingCourseEnrolled(courseYear, courseData);
+                return updateCourseEnrolled(courseYear, courseData);
             })
             .then(() => {
                 resolve();
@@ -245,5 +246,83 @@ export function enrollCourse(courseYear, courseID, studentData) {
             .catch(err => {
                 reject(err);
             })
+    })
+}
+
+export function updateCourseEnrolledIndividualCourse(courseYear, courseID) {
+    return new Promise((resolve, reject) => {
+        let courseData;
+        getCourseData(courseYear, courseID)
+            .then(res => {
+                courseData = res;
+                return updateCourseEnrolled(courseYear, courseData);
+            })
+            .then(() => {
+                console.log(`Enroll in a course ${courseID} in course year ${courseYear} successfully.`)
+                resolve();
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+}
+
+export function addStudentDataNew(courseYear, studentData) {
+    const { studentID } = studentData;
+    const db = firebase.firestore();
+    const studentRef = db.collection(courseYear).doc('student').collection('student').doc(studentID);
+    return new Promise((resolve, reject) => {
+        studentRef.set(studentData)
+            .then(() => {
+                resolve();
+            })
+            .catch(err => {
+                console.error(err);
+                const errorMessage = `System failed adding student data. ${err.message}`;
+                reject(errorMessage);
+            })
+    })
+}
+
+export function validateIndividualCourse (courseYear = '', courseID = '', studentData = { studentID: '' }){
+    return new Promise((resolve, reject) => {
+        let courseData;
+        let courseValidateData;
+        getCourseData(courseYear, courseID)
+            .then(res => {
+                courseData = res;
+                return checkCourseAvailable(courseYear, courseData);
+            })
+            .then(() => {
+                return checkStudentGrade(studentData, courseYear, courseData);
+            })
+            .then(() => {
+                return getCourseValidateData(courseYear, courseID);
+            })
+            .then(res => {
+                courseValidateData = res;
+                return validateCourseData(courseYear, courseData, courseValidateData);
+            })
+            .then(()=> {
+                resolve();
+                console.log('ValidateIndividualCourse is successful.')
+            })
+            .catch(err => {
+                console.error('ValidateIndividualCourse error: ',err);
+                reject(err);
+            })
+    })
+}
+
+const validateCourseData = (courseYear, courseData, courseValidateData) => {
+    return new Promise((resolve, reject) => {
+        const {courseID} = courseData;
+        const validateCourseCapacity = courseData.courseCapacity === courseValidateData.courseCapacity;
+        if (validateCourseCapacity) {
+            resolve();
+        } else {
+            const err = `Technical issue has been found in the system. The data of course ${courseID} in course year ${courseYear} is not valid. Please contact admin for more infomation.`;
+            reject(err);
+        }
     })
 }

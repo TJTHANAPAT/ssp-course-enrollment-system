@@ -9,15 +9,85 @@ import Footer from './components/Footer';
 
 class EnrollWithPlan extends React.Component {
     state = {
-        isLoadingComplete: false,
+        isLoading: true,
         isError: false,
-        isAllowSelectCourses: false
+        isAllowSelectCourses: false,
+        isEnrollmentSuccess: false
+    }
+
+    async enrollCoursesWithPlan() {
+        try {
+            this.setState({ isLoading: true });
+            const {
+                courseYear,
+                studentID,
+                nameTitle,
+                nameFirst,
+                nameLast,
+                studentGrade,
+                studentClass,
+                studentRoll,
+                studentEnrollPlan,
+                studentEnrolledCourse
+            } = this.state;
+            const studentData = {
+                studentID: studentID,
+                nameTitle: nameTitle,
+                nameFirst: nameFirst,
+                nameLast: nameLast,
+                studentGrade: studentGrade,
+                studentClass: studentClass,
+                studentRoll: studentRoll,
+                studentEnrollPlan: studentEnrollPlan,
+                enrolledCourse: studentEnrolledCourse
+            }
+            const daysArr = [
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday'
+            ]
+            await enroll.checkStudentID(courseYear, studentID);
+            for (let i = 0; i < daysArr.length; i++) {
+                const day = daysArr[i];
+                if (studentEnrolledCourse[day].length > 0) {
+                    for (const courseID of studentEnrolledCourse[day]) {
+                        await enroll.validateIndividualCourse(courseYear, courseID, studentData);
+                    }
+                }
+            }
+            for (let i = 0; i < daysArr.length; i++) {
+                const day = daysArr[i];
+                if (studentEnrolledCourse[day].length > 0) {
+                    for (const courseID of studentEnrolledCourse[day]) {
+                        await enroll.updateCourseEnrolledIndividualCourse(courseYear, courseID);
+                    }
+                }
+            }
+            await enroll.addStudentDataNew(courseYear, studentData);
+            console.log(`Enrollment of student with ID ${studentID} has benn completed!`);
+            this.setState({
+                isLoading: false,
+                studentData: studentData,
+                isEnrollmentSuccess: true,
+            });
+        } catch (err) {
+            console.error(err);
+            this.setState({
+                isLoading: false,
+                isError: true,
+                errorMessage: err
+            });
+        }
     }
 
     async componentDidMount() {
         try {
             const getSystemConfig = await system.getSystemConfig();
-            const systemConfig = getSystemConfig.systemConfig;
+            const systemConfig = await getSystemConfig.systemConfig;
             const courseYear = systemConfig.currentCourseYear;
             const courseYearsArr = systemConfig.courseYears;
             await enroll.checkCourseYearAvailable(courseYear, systemConfig);
@@ -25,7 +95,7 @@ class EnrollWithPlan extends React.Component {
             const courseYearConfig = getCourseYearConfig.config;
             const coursesData = await enroll.getCoursesData(courseYear);
             this.setState({
-                isLoadingComplete: true,
+                isLoading: false,
                 courseYear: courseYear,
                 courseYearConfig: courseYearConfig,
                 courseGrade: courseYearConfig.grades,
@@ -35,7 +105,7 @@ class EnrollWithPlan extends React.Component {
         catch (err) {
             console.error(err)
             this.setState({
-                isLoadingComplete: true,
+                isLoading: false,
                 isError: true,
                 errorMessage: err
             });
@@ -143,7 +213,7 @@ class EnrollWithPlan extends React.Component {
         if (coursesData.length === 0) {
             return (
                 <div className="mx-4 text-center">
-                    <p>ขออภัย ไม่พบรายวิชาที่คุณต้องการ</p>
+                    <p>ขออภัย ไม่พบรายวิชาที่คุณสามารถเลือกได้</p>
                 </div>
             )
         } else {
@@ -203,6 +273,24 @@ class EnrollWithPlan extends React.Component {
         }
     }
 
+    filterCoursesDataByGrade = (coursesData, grade) => {
+        let coursesDataFiltered = [];
+        if (grade === 'all') {
+            coursesDataFiltered = coursesData
+        } else {
+            for (let i = 0; i < coursesData.length; i++) {
+                const course = coursesData[i];
+                for (let j = 0; j < course.courseGrade.length; j++) {
+                    const courseGrade = course.courseGrade[j];
+                    if (courseGrade === grade || courseGrade === parseInt(grade)) {
+                        coursesDataFiltered.push(course);
+                    }
+                }
+            }
+        }
+        return (coursesDataFiltered);
+    }
+
     filterCoursesDataByDay = (coursesData, day = '') => {
         const daysArr = [
             'sunday',
@@ -239,9 +327,11 @@ class EnrollWithPlan extends React.Component {
             isAllowSelectCourses,
             coursesData,
             courseYearConfig,
-            studentEnrollPlan
+            studentEnrollPlan,
+            studentGrade
         } = this.state;
-        if (isAllowSelectCourses) {
+        if (isAllowSelectCourses && studentGrade !== undefined) {
+            const coursesDataFilteredByGrade = this.filterCoursesDataByGrade(coursesData, studentGrade)
             const enrollPlans = courseYearConfig.enrollPlans
             let selectedEnrollPlan = null;
             for (let i = 0; i < enrollPlans.length; i++) {
@@ -252,7 +342,7 @@ class EnrollWithPlan extends React.Component {
             }
             const enrollPlanDetail = selectedEnrollPlan.plan.map((day, i) => {
                 if (day.numOfCourse > 0) {
-                    const coursesDataFiltered = this.filterCoursesDataByDay(coursesData, day.day)
+                    const coursesDataFiltered = this.filterCoursesDataByDay(coursesDataFilteredByGrade, day.day)
                     return (
                         <div key={i} className="mt-2 mb-3">
                             <h5>เลือก {day.numOfCourse} รายวิชาสำหรับ{system.translateDayToThai(day.day)}</h5>
@@ -287,7 +377,7 @@ class EnrollWithPlan extends React.Component {
         const { courseYearConfig, studentEnrollPlan, studentEnrolledCourse } = this.state;
         if (event.target.checked) {
             const enrollPlans = courseYearConfig.enrollPlans
-            let selectedEnrollPlan = null;
+            let selectedEnrollPlan;
             for (let i = 0; i < enrollPlans.length; i++) {
                 const enrollPlan = enrollPlans[i];
                 if (enrollPlan.name === studentEnrollPlan) {
@@ -295,7 +385,7 @@ class EnrollWithPlan extends React.Component {
                 }
             }
             const currentNumOfEnrolledCourse = studentEnrolledCourse[courseDay].length;
-            let limitNumOfEnrolledCourse = null;
+            let limitNumOfEnrolledCourse;
             for (let i = 0; i < selectedEnrollPlan.plan.length; i++) {
                 const enrollPlan = selectedEnrollPlan.plan[i];
                 if (courseDay === enrollPlan.day) {
@@ -321,6 +411,37 @@ class EnrollWithPlan extends React.Component {
         }
         console.log('Current Student Selected Courses: ', this.state.studentEnrolledCourse)
 
+    }
+
+    enrollCourse = (event) => {
+        event.preventDefault();
+        console.log('enrolling...')
+        const { courseYearConfig, studentEnrollPlan, studentEnrolledCourse } = this.state;
+        if (studentEnrollPlan !== '' && studentEnrollPlan !== undefined) {
+            const enrollPlans = courseYearConfig.enrollPlans
+            let selectedEnrollPlan;
+            for (let i = 0; i < enrollPlans.length; i++) {
+                const enrollPlan = enrollPlans[i];
+                if (enrollPlan.name === studentEnrollPlan) {
+                    selectedEnrollPlan = enrollPlan
+                }
+            }
+            let isStudentEnrolledCourseValid = true;
+            for (let i = 0; i < selectedEnrollPlan.plan.length; i++) {
+                const dayPlan = selectedEnrollPlan.plan[i];
+                if (studentEnrolledCourse[dayPlan.day].length !== dayPlan.numOfCourse) {
+                    isStudentEnrolledCourseValid = false;
+                }
+            }
+            if (!isStudentEnrolledCourseValid) {
+                alert('เลือกรายวิชาไม่ถูกต้อง');
+            } else {
+                console.log('เลือกรายวิชาถูกต้อง');
+                console.log('รูปแบบ: ', selectedEnrollPlan.plan)
+                console.log('วิชาที่ลงทะเบียน: ', studentEnrollPlan, studentEnrolledCourse)
+                this.enrollCoursesWithPlan();
+            }
+        }
     }
 
     enrollmentForm = () => {
@@ -385,12 +506,105 @@ class EnrollWithPlan extends React.Component {
         );
     }
 
+    enrollmentSuccessPage = () => {
+        const {
+            courseYear,
+            studentData
+        } = this.state;
+        // const studentData = {
+        //     nameTitle: 'นาย',
+        //     nameFirst: 'วชิราลงกรณ์',
+        //     nameLast: 'มหิดล',
+        //     studentID: 'วชร10',
+        //     studentEnrollPlan: 'เข้าเรียนตามใจยังไงก็ได้เกียรตินิยม',
+        //     enrolledCourse: {
+        //         sunday:['ปั่นจักรยาน','ฮาเร็ม'],
+        //         monday:['นั่งเครื่องบินเล่น','ตรวจสอบภาษีที่ได้รับ'],
+        //         friday:['เดินเล่นกับคุณฟู่ฟู่','ปั่นจักรยาน']
+        //     }
+        // }
+        const {
+            nameTitle,
+            nameFirst,
+            nameLast,
+            studentID,
+            studentEnrollPlan,
+            enrolledCourse
+        } = studentData;
+        const daysArr = [
+            'sunday',
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday'
+        ]
+        let studentEnrolledCourse = [];
+        for (let i = 0; i < daysArr.length; i++) {
+            const day = daysArr[i];
+            if (enrolledCourse[day] !== undefined) {
+                if (enrolledCourse[day].length > 0) {
+                    let enrolledCourseDay = {
+                        day: day,
+                        numOfCourse: enrolledCourse[day].length,
+                        course: enrolledCourse[day]
+                    }
+                    studentEnrolledCourse.push(enrolledCourseDay)
+                }
+            }
+        }
+
+        console.log('studentEnrolledCourse', studentEnrolledCourse)
+
+        const studentEnrolledCourseDetail = studentEnrolledCourse.map((detail, i) => {
+            console.log('EnrolledCourseDetail for day', detail)
+            console.log('course' , detail.course)
+            const enrolledCourseDetail = detail.course.map((courseID, j) => {
+                console.log('detail.course',j,courseID);
+                return <li className="list-group-item" key={j}>{courseID}</li>
+            })
+            return (
+                <div key={i} className="my-3">
+                    <h5>{detail.numOfCourse} รายวิชาสำหรับ{system.translateDayToThai(detail.day)}</h5>
+                    <ul className="list-group">
+                        {enrolledCourseDetail}
+                    </ul>
+                </div>
+            )
+        })
+
+        return (
+            <div className="body body-center bg-gradient">
+                <div className="wrapper">
+                    <div className="row align-items-center">
+                        <div className="col-sm-3 text-center mb-3">
+                            <i className="fa fa-check fa-5x" aria-hidden="false"></i>
+                        </div>
+                        <div className="col-sm-9 text-left">
+                            <h1>คุณลงทะเบียนสำเร็จแล้ว</h1>
+                            <p>
+                                <b>{nameTitle}{nameFirst} {nameLast}</b> (เลขประจำตัวนักเรียน : {studentID})
+                                ได้ทำการลงทะเบียนเรียนรายวิชาเพิ่มเติมรูปแบบ '{studentEnrollPlan}' ในปีการศึกษา {courseYear} ในรายวิชาดังนี้
+                            </p>
+                            {studentEnrolledCourseDetail}
+                        </div>
+                    </div>
+                    <a className="btn btn-wrapper-bottom btn-green" href="/">กลับหน้าแรก</a>
+                </div>
+                <Footer />
+            </div>
+        )
+    }
+
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage, isEnrollmentSuccess } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'home'} />
+        } else if (isEnrollmentSuccess) {
+            return this.enrollmentSuccessPage();
         } else {
             const { courseYear } = this.state;
             return (
