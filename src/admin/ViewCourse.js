@@ -42,15 +42,28 @@ class ViewCourse extends React.Component {
                     courseCapacity: course.courseCapacity,
                     courseTeacher: course.courseTeacher,
                     courseGrade: course.courseGrade,
+                    courseDay: course.courseDay
                 })
                 const { courseYear, courseID } = this.state;
                 return this.getCourseStudentsData(courseYear, courseID);
             })
             .then(res => {
-                this.setState({
-                    studentsArr: res,
-                    isLoadingComplete: true
-                })
+                const {courseYear,courseID,courseDay} = this.state;
+                this.getCourseStudentsDataNew(courseYear,courseID,courseDay)
+                    .then(res2 => {
+                        this.setState({
+                            studentsArr: res.concat(res2),
+                            isLoadingComplete: true
+                        })
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        this.setState({
+                            isLoadingComplete: true,
+                            isError: true,
+                            errorMessage: err
+                        })
+                    })
             })
             .catch(err => {
                 console.error(err);
@@ -121,6 +134,26 @@ class ViewCourse extends React.Component {
     getCourseStudentsData = (courseYear, courseID) => {
         const db = firebase.firestore();
         const studentRef = db.collection(courseYear).doc('student').collection('student').where('enrolledCourse', '==', courseID);
+        return new Promise((resolve, reject) => {
+            studentRef.get()
+                .then(querySnapshot => {
+                    let studentsArr = [];
+                    querySnapshot.forEach(function (doc) {
+                        studentsArr.push(doc.data());
+                    });
+                    resolve(studentsArr);
+                })
+                .catch(err => {
+                    console.error(err);
+                    const errorMessage = `Firebase failed getting student data of course ${courseID} in ${courseYear}. (${err.errorMessage})`
+                    reject(errorMessage)
+                })
+        })
+    }
+
+    getCourseStudentsDataNew = (courseYear, courseID, courseDay) => {
+        const db = firebase.firestore();
+        const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
         return new Promise((resolve, reject) => {
             studentRef.get()
                 .then(querySnapshot => {
