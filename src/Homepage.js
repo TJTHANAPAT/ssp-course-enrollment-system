@@ -10,7 +10,7 @@ class Homepage extends React.Component {
                     <h4>โรงเรียนสตรีสมุทรปราการ</h4>
                     <div className="mt-3">
                         <a className="btn btn-landing m-2" href="/enroll">ลงทะเบียน</a>
-                        <a className="btn btn-landing m-2" href="/search">ค้นหา</a>
+                        <a className="btn btn-landing m-2" href="/search">ค้นหาข้อมูลนักเรียน</a>
                     </div>
                 </div>
                 <Footer/>

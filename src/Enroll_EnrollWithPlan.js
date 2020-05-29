@@ -1,6 +1,4 @@
 import React from 'react';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
 import * as system from './functions/systemFunctions';
 import * as enroll from './functions/enrollCourseFunction'
 import LoadingPage from './components/LoadingPage';
@@ -10,78 +8,8 @@ import Footer from './components/Footer';
 class EnrollWithPlan extends React.Component {
     state = {
         isLoading: true,
-        isError: false,
         isAllowSelectCourses: false,
         isEnrollmentSuccess: false
-    }
-
-    async enrollCoursesWithPlan() {
-        try {
-            this.setState({ isLoading: true });
-            const {
-                courseYear,
-                studentID,
-                nameTitle,
-                nameFirst,
-                nameLast,
-                studentGrade,
-                studentClass,
-                studentRoll,
-                studentEnrollPlan,
-                studentEnrolledCourse
-            } = this.state;
-            const studentData = {
-                studentID: studentID,
-                nameTitle: nameTitle,
-                nameFirst: nameFirst,
-                nameLast: nameLast,
-                studentGrade: studentGrade,
-                studentClass: studentClass,
-                studentRoll: studentRoll,
-                studentEnrollPlan: studentEnrollPlan,
-                enrolledCourse: studentEnrolledCourse
-            }
-            const daysArr = [
-                'sunday',
-                'monday',
-                'tuesday',
-                'wednesday',
-                'thursday',
-                'friday',
-                'saturday'
-            ]
-            await enroll.checkStudentID(courseYear, studentID);
-            for (let i = 0; i < daysArr.length; i++) {
-                const day = daysArr[i];
-                if (studentEnrolledCourse[day].length > 0) {
-                    for (const courseID of studentEnrolledCourse[day]) {
-                        await enroll.validateIndividualCourse(courseYear, courseID, studentData);
-                    }
-                }
-            }
-            for (let i = 0; i < daysArr.length; i++) {
-                const day = daysArr[i];
-                if (studentEnrolledCourse[day].length > 0) {
-                    for (const courseID of studentEnrolledCourse[day]) {
-                        await enroll.updateCourseEnrolledIndividualCourse(courseYear, courseID);
-                    }
-                }
-            }
-            await enroll.addStudentDataNew(courseYear, studentData);
-            console.log(`Enrollment of student with ID ${studentID} has benn completed!`);
-            this.setState({
-                isLoading: false,
-                studentData: studentData,
-                isEnrollmentSuccess: true,
-            });
-        } catch (err) {
-            console.error(err);
-            this.setState({
-                isLoading: false,
-                isError: true,
-                errorMessage: err
-            });
-        }
     }
 
     async componentDidMount() {
@@ -98,7 +26,7 @@ class EnrollWithPlan extends React.Component {
                 isLoading: false,
                 courseYear: courseYear,
                 courseYearConfig: courseYearConfig,
-                courseGrade: courseYearConfig.grades,
+                gradesArr: courseYearConfig.grades,
                 coursesData: coursesData
             });
         }
@@ -121,29 +49,6 @@ class EnrollWithPlan extends React.Component {
         this.setState({
             [event.target.id]: event.target.value
         });
-    }
-
-    getStudentDataNew = () => {
-        const db = firebase.firestore();
-        const studentRef = db.collection('2020/student/student').where('example.monday', 'array-contains', 'ว201')
-        return new Promise((resolve, reject) => {
-            studentRef.get()
-                .then(snapshot => {
-                    if (snapshot.empty) {
-                        const err = `empty`
-                        reject(err);
-                    } else {
-                        snapshot.forEach(doc => {
-                            console.log(doc.id, doc.data());
-                        });
-                        resolve();
-                    }
-                })
-                .catch(err => {
-                    console.error(err)
-                    reject(err.message);
-                });
-        })
     }
 
     enrollPlanSelector = () => {
@@ -185,6 +90,27 @@ class EnrollWithPlan extends React.Component {
                 </ul>
             </div>
         )
+    }
+
+    handleChangeStudentGrade = (event) => {
+        const defaultStudentEnrolledCourse = {
+            sunday: [],
+            monday: [],
+            tuesday: [],
+            wednesday: [],
+            thursday: [],
+            friday: [],
+            saturday: []
+        }
+        let checkboxes = document.getElementsByName('selectCourseCheckbox')
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            checkbox.checked = false;
+        }
+        this.setState({
+            studentGrade: event.target.value,
+            studentEnrolledCourse: defaultStudentEnrolledCourse,
+        })
     }
 
     handleChangeEnrollPlanSelector = (event) => {
@@ -444,15 +370,84 @@ class EnrollWithPlan extends React.Component {
         }
     }
 
+    async enrollCoursesWithPlan() {
+        try {
+            this.setState({ isLoading: true });
+            const {
+                courseYear,
+                studentID,
+                nameTitle,
+                nameFirst,
+                nameLast,
+                studentGrade,
+                studentClass,
+                studentRoll,
+                studentEnrollPlan,
+                studentEnrolledCourse
+            } = this.state;
+            const studentData = {
+                studentID: studentID,
+                nameTitle: nameTitle,
+                nameFirst: nameFirst,
+                nameLast: nameLast,
+                studentGrade: studentGrade,
+                studentClass: studentClass,
+                studentRoll: studentRoll,
+                studentEnrollPlan: studentEnrollPlan,
+                enrolledCourse: studentEnrolledCourse
+            }
+            const daysArr = [
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday'
+            ]
+            await enroll.checkStudentID(courseYear, studentID);
+            for (let i = 0; i < daysArr.length; i++) {
+                const day = daysArr[i];
+                if (studentEnrolledCourse[day].length > 0) {
+                    for (const courseID of studentEnrolledCourse[day]) {
+                        await enroll.validateIndividualCourse(courseYear, courseID, studentData);
+                    }
+                }
+            }
+            for (let i = 0; i < daysArr.length; i++) {
+                const day = daysArr[i];
+                if (studentEnrolledCourse[day].length > 0) {
+                    for (const courseID of studentEnrolledCourse[day]) {
+                        await enroll.updateCourseEnrolledIndividualCourse(courseYear, courseID);
+                    }
+                }
+            }
+            await enroll.addStudentDataNew(courseYear, studentData);
+            console.log(`Enrollment of student with ID ${studentID} has benn completed!`);
+            this.setState({
+                isLoading: false,
+                studentData: studentData,
+                isEnrollmentSuccess: true,
+            });
+        } catch (err) {
+            console.error(err);
+            this.setState({
+                isLoading: false,
+                isError: true,
+                errorMessage: err
+            });
+        }
+    }
+
     enrollmentForm = () => {
-        const { courseGrade } = this.state;
+        const { gradesArr } = this.state;
         const updateInput = this.updateInput;
         const gradeSelector = () => {
-            let gradeOptions = courseGrade.map((grade, i) => {
+            let gradeOptions = gradesArr.map((grade, i) => {
                 return <option value={grade} key={i}>มัธยมศึกษาปีที่ {grade}</option>
             })
             return (
-                <select id="studentGrade" className="form-control" onChange={updateInput} defaultValue="" required>
+                <select id="studentGrade" className="form-control" onChange={this.handleChangeStudentGrade} defaultValue="" required>
                     <option value="" disabled>เลือก...</option>
                     {gradeOptions}
                 </select>
@@ -506,23 +501,21 @@ class EnrollWithPlan extends React.Component {
         );
     }
 
+    getCourseName = (courseID, coursesData) => {
+        for (let i = 0; i < coursesData.length; i++) {
+            const course = coursesData[i];
+            if (courseID === course.courseID) {
+                return course.courseName;
+            }
+        }
+    }
+
     enrollmentSuccessPage = () => {
         const {
             courseYear,
+            coursesData,
             studentData
         } = this.state;
-        // const studentData = {
-        //     nameTitle: 'นาย',
-        //     nameFirst: 'วชิราลงกรณ์',
-        //     nameLast: 'มหิดล',
-        //     studentID: 'วชร10',
-        //     studentEnrollPlan: 'เข้าเรียนตามใจยังไงก็ได้เกียรตินิยม',
-        //     enrolledCourse: {
-        //         sunday:['พลศึกษา (ปั่นจักรยาน)','การเลี้ยงลูกที่ดี'],
-        //         monday:['การขับเครื่องบิน','การใช้ภาษีประชาชนอย่างยั่งยืน'],
-        //         friday:['การเมืองการปกครองภายใต้ระบอบกษัตริย์']
-        //     }
-        // }
         const {
             nameTitle,
             nameFirst,
@@ -559,10 +552,10 @@ class EnrollWithPlan extends React.Component {
 
         const studentEnrolledCourseDetail = studentEnrolledCourse.map((detail, i) => {
             console.log('EnrolledCourseDetail for day', detail)
-            console.log('course' , detail.course)
+            console.log('course', detail.course)
             const enrolledCourseDetail = detail.course.map((courseID, j) => {
-                console.log('detail.course',j,courseID);
-                return <li className="list-group-item py-2" key={j}>{courseID}</li>
+                console.log('detail.course', j, courseID);
+                return <li className="list-group-item py-2" key={j}>{courseID} {this.getCourseName(courseID, coursesData)}</li>
             })
             return (
                 <div key={i} className="my-3">

@@ -10,19 +10,17 @@ class GetStudentData extends React.Component {
     state = {
         searchStudentID: '',
         studentID: '',
-
-        courseYearArr: [],
-        selectedCourseYear: '',
         lastSearchCourseYear: '',
+        courseYearArr: [],
+
 
         isSelectedCourseYearChange: false,
         isLoading: true,
-        isLoadingData: false,
-        isGetDataComplete: false,
-        isDataExists: false,
-        alertMessage: ''
+        isLoadingStudentData: false,
+        isGetStudentDataComplete: false,
+        isStudentDataExists: false
     }
-    async componentDidMount() {
+    componentDidMount = async () => {
         try {
             const getSystemConfig = await system.getSystemConfig();
             const systemConfig = await getSystemConfig.systemConfig;
@@ -66,64 +64,117 @@ class GetStudentData extends React.Component {
         this.setState({ selectedCourseYear: newSelectCourseYear });
     }
 
-    searchStudentByID = (event) => {
-        event.preventDefault();
-        const {
-            searchStudentID,
-            studentID,
-            selectedCourseYear,
-            lastSearchCourseYear
-        } = this.state;
+    getCourseName = (courseID, coursesData) => {
+        for (let i = 0; i < coursesData.length; i++) {
+            const course = coursesData[i];
+            if (courseID === course.courseID) {
+                return course.courseName;
+            }
+        }
+    }
+
+    getStudentData = (studentID, courseYear) => {
         const db = firebase.firestore();
-        const studentRef = db.collection(selectedCourseYear).doc('student').collection('student');
-        if ((searchStudentID !== studentID) || (selectedCourseYear !== lastSearchCourseYear)) {
-            this.setState({
-                isGetDataComplete: false,
-                isLoadingData: true
-            });
-            studentRef.doc(searchStudentID).get()
-                .then(studentDoc => {
-                    if (studentDoc.exists) {
-                        const { studentID } = studentDoc.data();
-                        this.setState({
-                            studentID: studentID,
-                            studentData: studentDoc.data(),
-                            lastSearchCourseYear: selectedCourseYear,
-                            isLoadingData: false,
-                            isGetDataComplete: true,
-                            isDataExists: true,
-                            alertMessage: ''
-                        })
+        const studentRef = db.collection(courseYear).doc('student').collection('student');
+        return new Promise((resolve, reject) => {
+            studentRef.doc(studentID).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const studentData = {
+                            data: doc.data(),
+                            isExists: true
+                        }
+                        resolve(studentData);
                     } else {
-                        this.setState({
-                            isGetDataComplete: true,
-                            isLoadingData: false,
-                            isDataExists: false,
-                            studentID: searchStudentID,
-                            lastSearchCourseYear: selectedCourseYear,
-                        });
+                        const studentData = {
+                            data: null,
+                            isExists: false
+                        }
+                        resolve(studentData);
                     }
                 })
                 .catch(err => {
                     console.error(err);
-                    this.setState({
-                        isError: true,
-                        alertMessage: `Error: ${err.message}`
-                    });
+                    const errorMessage = `Failed getting student ${studentID} data in course year ${courseYear}. ${err.message}`;
+                    reject(errorMessage)
                 })
+        })
+    }
+
+    searchStudentByID = async (event) => {
+        try {
+            event.preventDefault();
+            const {
+                searchStudentID,
+                studentID,
+                selectedCourseYear,
+                lastSearchCourseYear
+            } = this.state;
+            if ((searchStudentID !== studentID) || (selectedCourseYear !== lastSearchCourseYear)) {
+                this.setState({
+                    isGetStudentDataComplete: false,
+                    isLoadingStudentData: true
+                });
+                const studentData = await this.getStudentData(searchStudentID, selectedCourseYear);
+                let enrolledCoursesID = [];
+                let enrolledCoursesData = [];
+                if (studentData.isExists && studentData.data.studentEnrollPlan !== undefined) {
+                    const daysArr = [
+                        'sunday',
+                        'monday',
+                        'tuesday',
+                        'wednesday',
+                        'thursday',
+                        'friday',
+                        'saturday'
+                    ]
+                    for (let i = 0; i < daysArr.length; i++) {
+                        const day = daysArr[i];
+                        if (studentData.data.enrolledCourse[day].length > 0) {
+                            console.log(studentData.data.enrolledCourse[day])
+                            studentData.data.enrolledCourse[day].forEach(courseID => {
+                                enrolledCoursesID.push(courseID)
+                            });
+                        }
+                    }
+                    console.log(enrolledCoursesID)
+
+                    for (const courseID of enrolledCoursesID) {
+                        const courseData = await system.getCourseData(selectedCourseYear, courseID);
+                        enrolledCoursesData.push(courseData);
+                    }
+                    studentData.data.enrolledCoursesData = enrolledCoursesData
+                    console.log(enrolledCoursesData)
+                }
+                this.setState({
+                    studentID: searchStudentID,
+                    studentData: studentData.data,
+                    isStudentDataExists: studentData.isExists,
+                    isGetStudentDataComplete: true,
+                    isLoadingStudentData: false,
+                    lastSearchCourseYear: selectedCourseYear,
+                })
+            }
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
         }
     }
 
     studentData = () => {
         const {
-            isLoadingData,
-            isGetDataComplete,
-            isDataExists
+            isLoadingStudentData,
+            isGetStudentDataComplete,
+            isStudentDataExists
         } = this.state;
 
-        if (isLoadingData) {
+        if (isLoadingStudentData) {
             return <p><i className="fa fa-circle-o-notch fa-spin fa-fw"></i> กำลังค้นหา...</p>
-        } else if (isGetDataComplete && isDataExists) {
+        } else if (isGetStudentDataComplete && isStudentDataExists) {
             const { studentData } = this.state;
             const {
                 nameTitle,
@@ -162,10 +213,10 @@ class GetStudentData extends React.Component {
                         }
                     }
                 }
-                
+
                 studentEnrolledCourseDetail = studentEnrolledCourse.map((detail, i) => {
                     const enrolledCourseDetail = detail.course.map((courseID, j) => {
-                    return <li className="list-group-item py-2" key={j}>{courseID}</li>
+                    return <li className="list-group-item py-2" key={j}>{courseID} {this.getCourseName(courseID, studentData.enrolledCoursesData)}</li>
                     })
                     return (
                         <div key={i} className="my-3">
@@ -179,21 +230,21 @@ class GetStudentData extends React.Component {
             } else {
                 studentEnrolledCourseDetail = `วิชาที่ลงทะเบียน: ${enrolledCourse}`
             }
-            
+
             return (
                 <div>
                     <h5>{nameFirst} {nameLast} ({studentID})</h5>
                     <p>
                         ชื่อ-นามสกุล: {nameTitle}{nameFirst} {nameLast}<br />
                         เลขประจำตัวนักเรียน: {studentID}<br />
-                        ชั้น: มัธยมศึกษาปีที่ {studentGrade}/{studentClass} เลขที่: {studentRoll}<br/>
+                        ชั้น: มัธยมศึกษาปีที่ {studentGrade}/{studentClass} เลขที่: {studentRoll}<br />
                         รูปแบบการลงทะเบียน: {studentEnrollPlan}
                     </p>
                     {studentEnrolledCourseDetail}
                     <p><i>ทำการลงทะเบียนเมื่อ {timestamp}</i></p>
                 </div>
             )
-        } else if (isGetDataComplete) {
+        } else if (isGetStudentDataComplete) {
             const { studentID } = this.state;
             return (
                 <div>
@@ -222,7 +273,7 @@ class GetStudentData extends React.Component {
             return (
                 <div className="body body-center bg-gradient">
                     <div className="wrapper text-left">
-                        <h1>ค้นหา</h1>
+                        <h1>ค้นหาข้อมูลนักเรียน</h1>
                         <p>เลือกปีการศึกษาและกรอกเลขประจำตัวนักเรียนเพื่อดูข้อมูล</p>
                         <select className="form-control mb-3" defaultValue={selectedCourseYear} onChange={this.selectCourseYear}>
                             {courseYearSelector}
