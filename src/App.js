@@ -8,7 +8,7 @@ import {
 import Homepage from './Homepage';
 import Dashboard from './CourseDashboard';
 import Enroll from './Enroll';
-import EnrollWithPlan from './EnrollWithPlan';
+import EnrollWithPlan from './Enroll_EnrollWithPlan';
 import GetStudentData from './GetStudentData';
 
 import Admin from './admin/Admin';
@@ -21,6 +21,7 @@ import ViewCourse from './admin/ViewCourse';
 import Register from './admin/Register';
 import Settings from './admin/Settings';
 import ManageStudent from './admin/ManageStudent';
+import EnrollSelectCourseYear from './Enroll_SelectCourseYear';
 
 function App() {
   return (
@@ -32,8 +33,11 @@ function App() {
         <Route path='/course/enroll'>
           <Enroll />
         </Route>
-        <Route path='/course/enrollwithplan'>
+        <Route path='/enroll/step2'>
           <EnrollWithPlan />
+        </Route>
+        <Route path='/enroll'>
+          <EnrollSelectCourseYear />
         </Route>
         <Route path='/course'>
           <Dashboard />
