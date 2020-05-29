@@ -269,6 +269,8 @@ export function updateCourseEnrolledIndividualCourse(courseYear, courseID) {
 
 export function addStudentDataNew(courseYear, studentData) {
     const { studentID } = studentData;
+    const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+    studentData = { ...studentData, ...{ timestamp: timestamp } };
     const db = firebase.firestore();
     const studentRef = db.collection(courseYear).doc('student').collection('student').doc(studentID);
     return new Promise((resolve, reject) => {

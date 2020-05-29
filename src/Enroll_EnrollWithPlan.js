@@ -86,9 +86,9 @@ class EnrollWithPlan extends React.Component {
 
     async componentDidMount() {
         try {
+            const courseYear = await system.getURLParam('courseYear');
             const getSystemConfig = await system.getSystemConfig();
-            const systemConfig = await getSystemConfig.systemConfig;
-            const courseYear = systemConfig.currentCourseYear;
+            const systemConfig = getSystemConfig.systemConfig;
             const courseYearsArr = systemConfig.courseYears;
             await enroll.checkCourseYearAvailable(courseYear, systemConfig);
             const getCourseYearConfig = await system.getCourseYearConfig(courseYear, courseYearsArr);
@@ -518,9 +518,9 @@ class EnrollWithPlan extends React.Component {
         //     studentID: 'วชร10',
         //     studentEnrollPlan: 'เข้าเรียนตามใจยังไงก็ได้เกียรตินิยม',
         //     enrolledCourse: {
-        //         sunday:['ปั่นจักรยาน','ฮาเร็ม'],
-        //         monday:['นั่งเครื่องบินเล่น','ตรวจสอบภาษีที่ได้รับ'],
-        //         friday:['เดินเล่นกับคุณฟู่ฟู่','ปั่นจักรยาน']
+        //         sunday:['พลศึกษา (ปั่นจักรยาน)','การเลี้ยงลูกที่ดี'],
+        //         monday:['การขับเครื่องบิน','การใช้ภาษีประชาชนอย่างยั่งยืน'],
+        //         friday:['การเมืองการปกครองภายใต้ระบอบกษัตริย์']
         //     }
         // }
         const {
@@ -562,7 +562,7 @@ class EnrollWithPlan extends React.Component {
             console.log('course' , detail.course)
             const enrolledCourseDetail = detail.course.map((courseID, j) => {
                 console.log('detail.course',j,courseID);
-                return <li className="list-group-item" key={j}>{courseID}</li>
+                return <li className="list-group-item py-2" key={j}>{courseID}</li>
             })
             return (
                 <div key={i} className="my-3">
