@@ -16,42 +16,38 @@ class GetStudentData extends React.Component {
         lastSearchCourseYear: '',
 
         isSelectedCourseYearChange: false,
-        isLoadingComplete: false,
+        isLoading: true,
         isLoadingData: false,
         isGetDataComplete: false,
         isDataExists: false,
         alertMessage: ''
     }
-    componentDidMount = () => {
-        system.getSystemConfig()
-            .then(res => {
-                const systemConfig = res.systemConfig;
-                const isSearchEnabled = systemConfig.isSearchEnabled;
-                if (isSearchEnabled) {
-                    const currentCourseYear = systemConfig.currentCourseYear;
-                    const courseYearArr = systemConfig.courseYears;
-                    this.setState({
-                        courseYearArr: courseYearArr,
-                        selectedCourseYear: currentCourseYear,
-                        isLoadingComplete: true
-                    })
-                } else {
-                    this.setState({
-                        isLoadingComplete: true,
-                        isError: true,
-                        errorMessage: 'ขออภัย การค้นหาข้อมูลนักเรียนถูกปิดการใช้งานโดยผู้ดูแลระบบ'
-                    })
-                }
-
-            })
-            .catch(err => {
-                console.error(err);
+    async componentDidMount() {
+        try {
+            const getSystemConfig = await system.getSystemConfig();
+            const systemConfig = await getSystemConfig.systemConfig;
+            const isSearchEnabled = systemConfig.isSearchEnabled;
+            if (isSearchEnabled) {
+                const currentCourseYear = systemConfig.currentCourseYear;
+                const courseYearArr = systemConfig.courseYears;
                 this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
+                    courseYearArr: courseYearArr,
+                    selectedCourseYear: currentCourseYear,
+                    isLoading: false
                 })
+            } else {
+                const err = 'การค้นหาข้อมูลนักเรียนถูกปิดการใช้งานโดยผู้ดูแลระบบ';
+                throw err;
+            }
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isLoading: false,
+                isError: true,
+                errorMessage: err
             })
+        }
     }
 
     goBack = (event) => {
@@ -80,8 +76,6 @@ class GetStudentData extends React.Component {
         } = this.state;
         const db = firebase.firestore();
         const studentRef = db.collection(selectedCourseYear).doc('student').collection('student');
-        const courseRef = db.collection(selectedCourseYear).doc('course').collection('course');
-
         if ((searchStudentID !== studentID) || (selectedCourseYear !== lastSearchCourseYear)) {
             this.setState({
                 isGetDataComplete: false,
@@ -90,50 +84,16 @@ class GetStudentData extends React.Component {
             studentRef.doc(searchStudentID).get()
                 .then(studentDoc => {
                     if (studentDoc.exists) {
-                        const {
-                            nameTitle,
-                            nameFirst,
-                            nameLast,
-                            studentID,
-                            studentGrade,
-                            studentClass,
-                            studentRoll,
-                            enrolledCourse,
-                            timestamp
-                        } = studentDoc.data();
-
-                        courseRef.doc(enrolledCourse).get()
-                            .then(courseDoc => {
-                                const { courseName } = courseDoc.data()
-                                const studentData = {
-                                    studentID: studentID,
-                                    nameTitle: nameTitle,
-                                    nameFirst: nameFirst,
-                                    nameLast: nameLast,
-                                    studentGrade: studentGrade,
-                                    studentClass: studentClass,
-                                    studentRoll: studentRoll,
-                                    enrolledCourse: enrolledCourse,
-                                    courseName: courseName,
-                                    timestamp: new Date(timestamp.seconds * 1000).toLocaleString()
-                                }
-                                this.setState({
-                                    studentID: studentID,
-                                    studentData: studentData,
-                                    lastSearchCourseYear: selectedCourseYear,
-                                    isLoadingData: false,
-                                    isGetDataComplete: true,
-                                    isDataExists: true,
-                                    alertMessage: ''
-                                })
-                            })
-                            .catch(err => {
-                                console.error(err);
-                                this.setState({
-                                    isError: true,
-                                    alertMessage: `Error: ${err.message}`
-                                });
-                            })
+                        const { studentID } = studentDoc.data();
+                        this.setState({
+                            studentID: studentID,
+                            studentData: studentDoc.data(),
+                            lastSearchCourseYear: selectedCourseYear,
+                            isLoadingData: false,
+                            isGetDataComplete: true,
+                            isDataExists: true,
+                            alertMessage: ''
+                        })
                     } else {
                         this.setState({
                             isGetDataComplete: true,
@@ -156,8 +116,6 @@ class GetStudentData extends React.Component {
 
     studentData = () => {
         const {
-            studentData,
-            studentID,
             isLoadingData,
             isGetDataComplete,
             isDataExists
@@ -166,6 +124,7 @@ class GetStudentData extends React.Component {
         if (isLoadingData) {
             return <p><i className="fa fa-circle-o-notch fa-spin fa-fw"></i> กำลังค้นหา...</p>
         } else if (isGetDataComplete && isDataExists) {
+            const { studentData } = this.state;
             const {
                 nameTitle,
                 nameFirst,
@@ -174,23 +133,68 @@ class GetStudentData extends React.Component {
                 studentGrade,
                 studentClass,
                 studentRoll,
-                enrolledCourse,
-                courseName,
-                timestamp
+                enrolledCourse
             } = studentData
+            const studentEnrollPlan = studentData.studentEnrollPlan !== undefined ? studentData.studentEnrollPlan : 'ลงทะเบียนในระบบรูปแบบเก่า';
+            const timestamp = studentData.timestamp !== undefined ? new Date(studentData.timestamp.seconds * 1000).toLocaleString() : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
+            let studentEnrolledCourseDetail;
+            if (studentData.studentEnrollPlan !== undefined) {
+                const daysArr = [
+                    'sunday',
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday'
+                ]
+                let studentEnrolledCourse = [];
+                for (let i = 0; i < daysArr.length; i++) {
+                    const day = daysArr[i];
+                    if (enrolledCourse[day] !== undefined) {
+                        if (enrolledCourse[day].length > 0) {
+                            let enrolledCourseDay = {
+                                day: day,
+                                numOfCourse: enrolledCourse[day].length,
+                                course: enrolledCourse[day]
+                            }
+                            studentEnrolledCourse.push(enrolledCourseDay)
+                        }
+                    }
+                }
+                
+                studentEnrolledCourseDetail = studentEnrolledCourse.map((detail, i) => {
+                    const enrolledCourseDetail = detail.course.map((courseID, j) => {
+                    return <li className="list-group-item py-2" key={j}>{courseID}</li>
+                    })
+                    return (
+                        <div key={i} className="my-3">
+                            <h6>{detail.numOfCourse} รายวิชาสำหรับ{system.translateDayToThai(detail.day)}</h6>
+                            <ul className="list-group">
+                                {enrolledCourseDetail}
+                            </ul>
+                        </div>
+                    )
+                })
+            } else {
+                studentEnrolledCourseDetail = `วิชาที่ลงทะเบียน: ${enrolledCourse}`
+            }
+            
             return (
                 <div>
                     <h5>{nameFirst} {nameLast} ({studentID})</h5>
                     <p>
                         ชื่อ-นามสกุล: {nameTitle}{nameFirst} {nameLast}<br />
                         เลขประจำตัวนักเรียน: {studentID}<br />
-                        ชั้น: มัธยมศึกษาปีที่ {studentGrade}/{studentClass} เลขที่: {studentRoll}<br />
-                        วิชาที่เลือก: {enrolledCourse} {courseName}
+                        ชั้น: มัธยมศึกษาปีที่ {studentGrade}/{studentClass} เลขที่: {studentRoll}<br/>
+                        รูปแบบการลงทะเบียน: {studentEnrollPlan}
                     </p>
+                    {studentEnrolledCourseDetail}
                     <p><i>ทำการลงทะเบียนเมื่อ {timestamp}</i></p>
                 </div>
             )
         } else if (isGetDataComplete) {
+            const { studentID } = this.state;
             return (
                 <div>
                     <h5>ไม่พบข้อมูลของนักเรียน {studentID} ในระบบ</h5>
@@ -201,8 +205,8 @@ class GetStudentData extends React.Component {
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'home'} />
