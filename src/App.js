@@ -9,11 +9,11 @@ import Homepage from './Homepage';
 import Dashboard from './CourseDashboard';
 import Enroll from './Enroll';
 import EnrollWithPlan from './Enroll_EnrollWithPlan';
-import GetStudentData from './GetStudentData';
+import SearchStudentData from './SearchStudentData';
 
 import Admin from './admin/Admin';
 import SystemManagement from './admin/SystemManagement';
-import CourseYearConfig from './admin/CourseYearConfig';
+import SystemCourseYearConfig from './admin/SystemCourseYearConfig';
 import IndividualCourseYearConfig from './admin/IndividualCourseYearConfig';
 import CreateCourse from './admin/CreateCourse';
 import EditCourse from './admin/EditCourse';
@@ -28,19 +28,19 @@ function App() {
     <Router>
       <Switch>
         <Route path='/search/'>
-          <GetStudentData />
+          <SearchStudentData />
         </Route>
         <Route path='/course/enroll'>
           <Enroll />
+        </Route>
+        <Route path='/course'>
+          <Dashboard />
         </Route>
         <Route path='/enroll/step2'>
           <EnrollWithPlan />
         </Route>
         <Route path='/enroll'>
           <EnrollSelectCourseYear />
-        </Route>
-        <Route path='/course'>
-          <Dashboard />
         </Route>
         <Route path='/admin/createcourse'>
           <CreateCourse />
@@ -51,20 +51,20 @@ function App() {
         <Route path='/admin/editcourse'>
           <EditCourse />
         </Route>
-        <Route path='/admin/system/config/year'>
-          <CourseYearConfig />
-        </Route>
-        <Route path='/admin/config/courseyear'>
-          <IndividualCourseYearConfig />
-        </Route>
-        <Route path='/admin/settings'>
-          <Settings />
-        </Route>
         <Route path='/admin/course'>
           <SystemManagement />
         </Route>
         <Route path='/admin/managestudent'>
           <ManageStudent />
+        </Route>
+        <Route path='/admin/configcourseyear'>
+          <IndividualCourseYearConfig />
+        </Route>
+        <Route path='/admin/system/configyear'>
+          <SystemCourseYearConfig />
+        </Route>
+        <Route path='/admin/system/settings'>
+          <Settings />
         </Route>
         <Route path='/admin'>
           <Admin />

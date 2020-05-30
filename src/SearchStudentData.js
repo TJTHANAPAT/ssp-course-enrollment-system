@@ -6,7 +6,7 @@ import LoadingPage from './components/LoadingPage';
 import ErrorPage from './components/ErrorPage';
 import Footer from './components/Footer';
 
-class GetStudentData extends React.Component {
+class SearchStudentData extends React.Component {
     state = {
         searchStudentID: '',
         studentID: '',
@@ -312,4 +312,4 @@ class GetStudentData extends React.Component {
     }
 }
 
-export default GetStudentData;
+export default SearchStudentData;

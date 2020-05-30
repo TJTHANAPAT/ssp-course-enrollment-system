@@ -187,7 +187,7 @@ class SystemManagement extends React.Component {
                             <h2>System Configuration</h2>
                             <p className="mt-2">No course year has been created. You have to create one by press the button below</p>
                             <div className="mt-2 text-center">
-                                <a role="button" className="btn btn-purple m-1" href="/admin/system/config/year">Config Course Years</a>
+                                <a role="button" className="btn btn-purple m-1" href="/admin/system/configyear">Config Course Years</a>
                                 <button className="btn btn-green m-1" onClick={this.signOut}><i className="fa fa-sign-out"></i> Logout</button>
                             </div>
                         </div>
@@ -207,14 +207,14 @@ class SystemManagement extends React.Component {
                             {this.courseDashboard(courses)}
                             <div>
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/createcourse?courseYear=${selectedCourseYear}`}>เพิ่มรายวิชาใหม่</a>
-                                <a role="button" className="btn btn-purple m-1" href={`/admin/config/courseyear?courseYear=${selectedCourseYear}`}>ตั้งค่าปีการศึกษา {selectedCourseYear}</a>
+                                <a role="button" className="btn btn-purple m-1" href={`/admin/configcourseyear?courseYear=${selectedCourseYear}`}>ตั้งค่าปีการศึกษา {selectedCourseYear}</a>
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/managestudent?courseYear=${selectedCourseYear}`}>การจัดการนักเรียน</a>
                             </div>
                             <hr />
                             <div>
                                 <button className="btn btn-green m-1" onClick={this.signOut}><i className="fa fa-sign-out"></i> ลงชื่อออก</button>
-                                <a role="button" className="btn btn-green m-1" href="/admin/system/config/year">ตั้งค่าปีการศึกษา</a>
-                                <a role="button" className="btn btn-green m-1" href="/admin/settings">ตั้งค่าระบบ</a>
+                                <a role="button" className="btn btn-green m-1" href="/admin/system/configyear">ตั้งค่าปีการศึกษา</a>
+                                <a role="button" className="btn btn-green m-1" href="/admin/system/settings">ตั้งค่าระบบ</a>
                             </div>
                         </div>
                         <Footer />
