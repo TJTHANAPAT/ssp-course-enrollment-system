@@ -12,7 +12,7 @@ class EnrollWithPlan extends React.Component {
         isEnrollmentSuccess: false
     }
 
-    async componentDidMount() {
+    componentDidMount = async () => {
         try {
             const courseYear = await system.getURLParam('courseYear');
             const getSystemConfig = await system.getSystemConfig();

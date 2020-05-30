@@ -11,10 +11,7 @@ class GetStudentData extends React.Component {
         searchStudentID: '',
         studentID: '',
         lastSearchCourseYear: '',
-        courseYearArr: [],
 
-
-        isSelectedCourseYearChange: false,
         isLoading: true,
         isLoadingStudentData: false,
         isGetStudentDataComplete: false,
@@ -101,6 +98,26 @@ class GetStudentData extends React.Component {
         })
     }
 
+    getCourseData(courseYear = '', courseID = '') {
+        const db = firebase.firestore();
+        const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)
+        return new Promise((resolve, reject) => {
+            courseRef.get()
+                .then(doc => {
+                    if (doc.exists) {
+                        resolve(doc.data());
+                    } else {
+                        resolve({courseID: courseID, courseName: 'รายวิชานี้อาจถูกลบออกจากระบบ โปรดติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม'})
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    const errorMessage = `Firebase failed getting course data of course ${courseID} in ${courseYear}. ${err.message}`;
+                    reject(errorMessage);
+                })
+        })
+    }
+
     searchStudentByID = async (event) => {
         try {
             event.preventDefault();
@@ -140,7 +157,7 @@ class GetStudentData extends React.Component {
                     console.log(enrolledCoursesID)
 
                     for (const courseID of enrolledCoursesID) {
-                        const courseData = await system.getCourseData(selectedCourseYear, courseID);
+                        const courseData = await this.getCourseData(selectedCourseYear, courseID);
                         enrolledCoursesData.push(courseData);
                     }
                     studentData.data.enrolledCoursesData = enrolledCoursesData
