@@ -196,6 +196,10 @@ footer {
   align-items: center;
 }
 
+li.list-item-disabled {
+  background-color: #e9ecef;
+}
+
 .enroll-selector:hover {
   background-color: #f8f8f8;
 }
