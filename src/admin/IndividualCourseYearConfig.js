@@ -44,6 +44,7 @@ class GradeConfig extends React.Component {
                 return system.getCourseYearConfig(courseYear, courseYearsArr, false);
             })
             .then(res => {
+                console.log(res)
                 this.setState({
                     enrollPlans: res.config.enrollPlans,
                     gradesArr: res.config.grades,
@@ -108,16 +109,16 @@ class GradeConfig extends React.Component {
             configRef.update({ grades: gradesArr, enrollPlans: enrollPlans })
                 .then(() => {
                     console.log('Update successfully!')
-                    alert('Update successfully!')
+                    alert('บันทึกสำเร็จ')
                 })
                 .catch(err => {
                     console.error('Error: ', err)
                 })
         } else {
-            configRef.set({ grades: gradesArr })
+            configRef.set({ grades: gradesArr, enrollPlans: enrollPlans })
                 .then(() => {
                     console.log('Update successfully!')
-                    alert('Update successfully!')
+                    alert('บันทึกสำเร็จ')
                 })
                 .catch(err => {
                     console.error('Error: ', err)

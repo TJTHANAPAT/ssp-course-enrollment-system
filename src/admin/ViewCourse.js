@@ -16,63 +16,38 @@ class ViewCourse extends React.Component {
         courseTeacher: '',
         courseGrade: [],
         gradesArr: [],
-        isLoadingComplete: false,
+        isLoading: true,
         studentsArr: []
     }
 
-    componentDidMount = () => {
-        auth.checkAuthState()
-            .then(() => {
-                return system.getURLParam('courseYear')
+    componentDidMount = async () => {
+        try {
+            await auth.checkAuthState();
+            const courseYear = await system.getURLParam('courseYear');
+            const courseID = await system.getURLParam('courseID');
+            const course = await system.getCourseData(courseYear, courseID);
+            const studentsArr = await this.getCourseStudentsData(courseYear, courseID, course.courseDay);
+            this.setState({
+                courseYear: courseYear,
+                courseName: course.courseName,
+                courseID: course.courseID,
+                courseCapacity: course.courseCapacity,
+                courseTeacher: course.courseTeacher,
+                courseGrade: course.courseGrade,
+                courseDay: course.courseDay,
+                studentsArr: studentsArr
             })
-            .then(res => {
-                const courseYear = res;
-                this.setState({ courseYear: courseYear });
-                return system.getURLParam('courseID');
-            })
-            .then(res => {
-                const courseID = res;
-                const { courseYear } = this.state;
-                return system.getCourseData(courseYear, courseID);
-            })
-            .then(course => {
-                this.setState({
-                    courseName: course.courseName,
-                    courseID: course.courseID,
-                    courseCapacity: course.courseCapacity,
-                    courseTeacher: course.courseTeacher,
-                    courseGrade: course.courseGrade,
-                    courseDay: course.courseDay
-                })
-                const { courseYear, courseID } = this.state;
-                return this.getCourseStudentsData(courseYear, courseID);
-            })
-            .then(res => {
-                const {courseYear,courseID,courseDay} = this.state;
-                this.getCourseStudentsDataNew(courseYear,courseID,courseDay)
-                    .then(res2 => {
-                        this.setState({
-                            studentsArr: res.concat(res2),
-                            isLoadingComplete: true
-                        })
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        this.setState({
-                            isLoadingComplete: true,
-                            isError: true,
-                            errorMessage: err
-                        })
-                    })
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     goBack = (event) => {
@@ -131,27 +106,7 @@ class ViewCourse extends React.Component {
         this.exportCSVFile(studentsArrFormated, fileTitle);
     }
 
-    getCourseStudentsData = (courseYear, courseID) => {
-        const db = firebase.firestore();
-        const studentRef = db.collection(courseYear).doc('student').collection('student').where('enrolledCourse', '==', courseID);
-        return new Promise((resolve, reject) => {
-            studentRef.get()
-                .then(querySnapshot => {
-                    let studentsArr = [];
-                    querySnapshot.forEach(function (doc) {
-                        studentsArr.push(doc.data());
-                    });
-                    resolve(studentsArr);
-                })
-                .catch(err => {
-                    console.error(err);
-                    const errorMessage = `Firebase failed getting student data of course ${courseID} in ${courseYear}. (${err.errorMessage})`
-                    reject(errorMessage)
-                })
-        })
-    }
-
-    getCourseStudentsDataNew = (courseYear, courseID, courseDay) => {
+    getCourseStudentsData = (courseYear, courseID, courseDay) => {
         const db = firebase.firestore();
         const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
         return new Promise((resolve, reject) => {
@@ -213,8 +168,8 @@ class ViewCourse extends React.Component {
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />

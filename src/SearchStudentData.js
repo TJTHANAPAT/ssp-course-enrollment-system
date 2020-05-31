@@ -28,7 +28,6 @@ class SearchStudentData extends React.Component {
                 this.setState({
                     courseYearArr: courseYearArr,
                     selectedCourseYear: currentCourseYear,
-                    isLoading: false
                 })
             } else {
                 const err = 'การค้นหาข้อมูลนักเรียนถูกปิดการใช้งานโดยผู้ดูแลระบบ';
@@ -38,10 +37,12 @@ class SearchStudentData extends React.Component {
         catch (err) {
             console.error(err);
             this.setState({
-                isLoading: false,
                 isError: true,
                 errorMessage: err
             })
+        }
+        finally {
+            this.setState({ isLoading: false });
         }
     }
 
@@ -98,7 +99,7 @@ class SearchStudentData extends React.Component {
         })
     }
 
-    getCourseData(courseYear = '', courseID = '') {
+    getCourseData(courseID, courseYear) {
         const db = firebase.firestore();
         const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)
         return new Promise((resolve, reject) => {
@@ -107,7 +108,7 @@ class SearchStudentData extends React.Component {
                     if (doc.exists) {
                         resolve(doc.data());
                     } else {
-                        resolve({courseID: courseID, courseName: 'รายวิชานี้อาจถูกลบออกจากระบบ โปรดติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม'})
+                        resolve({ courseID: courseID, courseName: 'รายวิชานี้อาจถูกลบออกจากระบบ โปรดติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม' })
                     }
                 })
                 .catch(err => {
@@ -133,9 +134,7 @@ class SearchStudentData extends React.Component {
                     isLoadingStudentData: true
                 });
                 const studentData = await this.getStudentData(searchStudentID, selectedCourseYear);
-                let enrolledCoursesID = [];
-                let enrolledCoursesData = [];
-                if (studentData.isExists && studentData.data.studentEnrollPlan !== undefined) {
+                if (studentData.isExists) {
                     const daysArr = [
                         'sunday',
                         'monday',
@@ -145,23 +144,21 @@ class SearchStudentData extends React.Component {
                         'friday',
                         'saturday'
                     ]
+                    let enrolledCoursesID = [];
                     for (let i = 0; i < daysArr.length; i++) {
                         const day = daysArr[i];
                         if (studentData.data.enrolledCourse[day].length > 0) {
-                            console.log(studentData.data.enrolledCourse[day])
                             studentData.data.enrolledCourse[day].forEach(courseID => {
                                 enrolledCoursesID.push(courseID)
                             });
                         }
                     }
-                    console.log(enrolledCoursesID)
-
+                    let enrolledCoursesData = [];
                     for (const courseID of enrolledCoursesID) {
-                        const courseData = await this.getCourseData(selectedCourseYear, courseID);
+                        const courseData = await this.getCourseData(courseID, selectedCourseYear);
                         enrolledCoursesData.push(courseData);
                     }
                     studentData.data.enrolledCoursesData = enrolledCoursesData
-                    console.log(enrolledCoursesData)
                 }
                 this.setState({
                     studentID: searchStudentID,
@@ -201,52 +198,46 @@ class SearchStudentData extends React.Component {
                 studentGrade,
                 studentClass,
                 studentRoll,
+                studentEnrollPlan,
                 enrolledCourse
             } = studentData
-            const studentEnrollPlan = studentData.studentEnrollPlan !== undefined ? studentData.studentEnrollPlan : 'ลงทะเบียนในระบบรูปแบบเก่า';
             const timestamp = studentData.timestamp !== undefined ? new Date(studentData.timestamp.seconds * 1000).toLocaleString() : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
-            let studentEnrolledCourseDetail;
-            if (studentData.studentEnrollPlan !== undefined) {
-                const daysArr = [
-                    'sunday',
-                    'monday',
-                    'tuesday',
-                    'wednesday',
-                    'thursday',
-                    'friday',
-                    'saturday'
-                ]
-                let studentEnrolledCourse = [];
-                for (let i = 0; i < daysArr.length; i++) {
-                    const day = daysArr[i];
-                    if (enrolledCourse[day] !== undefined) {
-                        if (enrolledCourse[day].length > 0) {
-                            let enrolledCourseDay = {
-                                day: day,
-                                numOfCourse: enrolledCourse[day].length,
-                                course: enrolledCourse[day]
-                            }
-                            studentEnrolledCourse.push(enrolledCourseDay)
+            const daysArr = [
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday'
+            ]
+            let studentEnrolledCourse = [];
+            for (let i = 0; i < daysArr.length; i++) {
+                const day = daysArr[i];
+                if (enrolledCourse[day] !== undefined) {
+                    if (enrolledCourse[day].length > 0) {
+                        let enrolledCourseDay = {
+                            day: day,
+                            numOfCourse: enrolledCourse[day].length,
+                            course: enrolledCourse[day]
                         }
+                        studentEnrolledCourse.push(enrolledCourseDay)
                     }
                 }
-
-                studentEnrolledCourseDetail = studentEnrolledCourse.map((detail, i) => {
-                    const enrolledCourseDetail = detail.course.map((courseID, j) => {
-                    return <li className="list-group-item py-2" key={j}>{courseID} {this.getCourseName(courseID, studentData.enrolledCoursesData)}</li>
-                    })
-                    return (
-                        <div key={i} className="my-3">
-                            <h6>{detail.numOfCourse} รายวิชาสำหรับ{system.translateDayToThai(detail.day)}</h6>
-                            <ul className="list-group">
-                                {enrolledCourseDetail}
-                            </ul>
-                        </div>
-                    )
-                })
-            } else {
-                studentEnrolledCourseDetail = `วิชาที่ลงทะเบียน: ${enrolledCourse}`
             }
+            const studentEnrolledCourseDetail = studentEnrolledCourse.map((detail, i) => {
+                const enrolledCourseDetail = detail.course.map((courseID, j) => {
+                    return <li className="list-group-item py-2" key={j}>{courseID} {this.getCourseName(courseID, studentData.enrolledCoursesData)}</li>
+                })
+                return (
+                    <div key={i} className="my-3">
+                        <h6>{detail.numOfCourse} รายวิชาสำหรับ{system.translateDayToThai(detail.day)}</h6>
+                        <ul className="list-group">
+                            {enrolledCourseDetail}
+                        </ul>
+                    </div>
+                )
+            })
 
             return (
                 <div>
@@ -265,7 +256,7 @@ class SearchStudentData extends React.Component {
             const { studentID } = this.state;
             return (
                 <div>
-                    <h5>ไม่พบข้อมูลของนักเรียน {studentID} ในระบบ</h5>
+                    <h5>ไม่พบข้อมูลของนักเรียนหมายเลขประจำตัว {studentID} ในระบบ</h5>
                     <p>เลขประจำตัวนักเรียนที่กรอกอาจไม่ถูกต้องหรือยังไม่ได้ทำการลงทะเบียน</p>
                 </div>
             )

@@ -58,7 +58,7 @@ export function getCoursesData(courseYear = '') {
     })
 }
 
-const getCourseData = (courseYear = '', courseID = '') => {
+export function getCourseData (courseYear = '', courseID = '') {
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)
     return new Promise((resolve, reject) => {
@@ -326,5 +326,41 @@ const validateCourseData = (courseYear, courseData, courseValidateData) => {
             const err = `Technical issue has been found in the system. The data of course ${courseID} in course year ${courseYear} is not valid. Please contact admin for more infomation.`;
             reject(err);
         }
+    })
+}
+
+export function updateCourseEnrolledIndividualCourseForDeleteStudent(courseYear, courseID) {
+    return new Promise((resolve, reject) => {
+        let courseData;
+        getCourseData(courseYear, courseID)
+            .then(res => {
+                courseData = res;
+                return updateCourseEnrolledForDeleteStudent(courseYear, courseData);
+            })
+            .then(() => {
+                console.log(`Enroll in a course ${courseID} in course year ${courseYear} successfully.`)
+                resolve();
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+}
+
+export function updateCourseEnrolledForDeleteStudent (courseYear, courseData) {
+    const course = courseData;
+    const db = firebase.firestore();
+    const courseRef = db.collection(courseYear).doc('course').collection('course').doc(course.courseID);
+    return new Promise((resolve, reject) => {
+        const updateCourseEnrolled = course.courseEnrolled - 1;
+        courseRef.update({ courseEnrolled: updateCourseEnrolled })
+            .then(() => {
+                resolve();
+            })
+            .catch(err => {
+                console.error(err);
+                const errorMessage = `System failed updating course enrolled student. ${err.message}`;
+                reject(errorMessage);
+            })
     })
 }
