@@ -366,34 +366,22 @@ class GetStudentData extends React.Component {
                 const studentEnrolledCourse = enrolledCourse;
                 console.log(`Deleting ${studentID}...`)
                 this.setState({ isLoading: true });
-                let enrolledCourseID = [];
-                if (studentData.studentEnrollPlan !== undefined) {
-                    const daysArr = [
-                        'sunday',
-                        'monday',
-                        'tuesday',
-                        'wednesday',
-                        'thursday',
-                        'friday',
-                        'saturday'
-                    ]
-
-                    for (let i = 0; i < daysArr.length; i++) {
-                        const day = daysArr[i];
-                        if (studentEnrolledCourse[day].length > 0) {
-                            for (const courseID of studentEnrolledCourse[day]) {
-                                enrolledCourseID.push(courseID)
-                                // await deleteStudent.updateCourseEnrolledIndividualCourse(courseID,courseYear)
-                            }
+                const daysArr = [
+                    'sunday',
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday'
+                ]
+                for (let i = 0; i < daysArr.length; i++) {
+                    const day = daysArr[i];
+                    if (studentEnrolledCourse[day].length > 0) {
+                        for (const courseID of studentEnrolledCourse[day]) {
+                            await deleteStudent.updateCourseEnrolledIndividualCourse(courseID, courseYear)
                         }
                     }
-
-                } else {
-                    enrolledCourseID.push(enrolledCourse)
-                }
-                console.log(enrolledCourseID)
-                for (const courseID of enrolledCourseID) {
-                    await deleteStudent.updateCourseEnrolledIndividualCourse(courseYear, courseID);
                 }
                 await deleteStudent.deleteStudentData(studentID, courseYear)
                 alert('ข้อมูลของนักเรียนคนนี้ถูกลบทิ้งสำเร็จแล้ว')
