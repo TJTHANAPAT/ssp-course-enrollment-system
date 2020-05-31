@@ -7,7 +7,6 @@ import {
 
 import Homepage from './Homepage';
 import Dashboard from './CourseDashboard';
-import Enroll from './Enroll';
 import EnrollSelectCourseYear from './Enroll_SelectCourseYear';
 import EnrollWithPlan from './Enroll_EnrollWithPlan';
 import SearchStudentData from './SearchStudentData';
@@ -30,9 +29,6 @@ function App() {
       <Switch>
         <Route path='/search/'>
           <SearchStudentData />
-        </Route>
-        <Route path='/course/enroll'>
-          <Enroll />
         </Route>
         <Route path='/course'>
           <Dashboard />
