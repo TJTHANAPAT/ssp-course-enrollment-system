@@ -26,11 +26,11 @@ class SystemManagement extends React.Component {
     componentDidMount = () => {
         auth.checkAuthState()
             .then(res => {
-                const user = res.user;
-                const isLogin = res.isLogin;
+                // const user = res.user;
+                // const isLogin = res.isLogin;
                 this.setState({
-                    currentUser: user,
-                    isLogin: isLogin,
+                    currentUser: res,
+                    isLogin: !!res,
                 })
                 return system.getSystemConfig(false)
             })

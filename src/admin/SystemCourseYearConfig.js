@@ -9,7 +9,7 @@ import ErrorPage from '../components/ErrorPage';
 import * as auth from './functions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
 
-class CourseYearConfig extends React.Component {
+class SystemCourseYearConfig extends React.Component {
     state = {
         isLoadingComplete: false,
         isSaveFirstInitSystem: false,
@@ -264,4 +264,4 @@ class CourseYearConfig extends React.Component {
     }
 }
 
-export default CourseYearConfig;
+export default SystemCourseYearConfig;

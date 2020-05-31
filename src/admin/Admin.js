@@ -11,47 +11,32 @@ import * as system from '../functions/systemFunctions';
 class Admin extends React.Component {
 
     state = {
-        isLoadindComplete: false
+        isLoading: true
     }
 
-    componentDidMount = () => {
-        system.getSystemConfig(false)
-            .then(res => {
-                const isFirstInitSystem = res.isFirstInitSystem;
-                console.log(res);
-                this.setState({ isFirstInitSystem: isFirstInitSystem });
-                if (!isFirstInitSystem) {
-                    auth.checkAuthState(false)
-                        .then(res => {
-                            const user = res.user;
-                            const isLogin = res.isLogin;
-                            this.setState({
-                                currentUser: user,
-                                isLogin: isLogin,
-                                isLoadindComplete: true
-                            })
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            this.setState({
-                                isLoadindComplete: true,
-                                isError: true,
-                                errorMessage: err
-                            })
-                        })
-                } else {
-                    this.setState({ isLoadindComplete: true })
-                }
-            })
-            .catch(err => {
-                console.error(err);
+    componentDidMount = async () => {
+        try {
+            const getSystemConfig = await system.getSystemConfig(false);
+            const isFirstInitSystem = getSystemConfig.isFirstInitSystem;
+            this.setState({ isFirstInitSystem: isFirstInitSystem });
+            if (!isFirstInitSystem) {
+                const user = await auth.checkAuthState(false);
                 this.setState({
-                    isLoadindComplete: true,
-                    isError: true,
-                    errorMessage: err
+                    currentUser: user,
+                    isSignedIn: !!user,
                 })
-            })
-
+            }
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     updateInput = (event) => {
@@ -60,26 +45,27 @@ class Admin extends React.Component {
         });
     }
 
-    login = event => {
-        event.preventDefault()
-        const { email, password } = this.state
-        this.setState({ isLoadindComplete: false });
-        auth.signInWithEmailAndPassword(email, password)
-            .then(res => {
-                this.setState({
-                    currentUser: res,
-                    isLogin: true,
-                    isLoadindComplete: true
-                })
+    login = async (event) => {
+        try {
+            event.preventDefault()
+            const { email, password } = this.state;
+            this.setState({isLoading: true});
+            const user = await auth.signInWithEmailAndPassword(email, password);
+            this.setState({
+                currentUser: user,
+                isSignedIn: !!user
             })
-            .catch(err => {
-                this.setState({
-                    isLoadindComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-                console.log(err)
-            })
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     loginForm = () => {
@@ -108,14 +94,14 @@ class Admin extends React.Component {
     }
 
     render() {
-        const { isLoadindComplete, isFirstInitSystem, isLogin, isError, errorMessage } = this.state;
-        if (!isLoadindComplete) {
+        const { isLoading, isFirstInitSystem, isSignedIn, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'none'} />
         } else if (isFirstInitSystem) {
             return <Register />
-        } else if (isLogin) {
+        } else if (isSignedIn) {
             return <SystemManagement />
         } else {
             return (

@@ -7,13 +7,13 @@ export function checkAuthState(rejectIfUserNotFound = true){
         auth.onAuthStateChanged(user => {
             if (user) {
                 console.log('User has signed in.')
-                resolve({user:user, isLogin:true});
+                resolve(user);
             } else if (rejectIfUserNotFound) {
                 console.log('User has not signed in.')
                 reject('คุณต้องเข้าสู่ระบบเพื่อเข้าถึงหน้านี้');
             } else {
                 console.log('User has not signed in.')
-                resolve({user:null, isLogin:false});
+                resolve(user);
             }
         })
     })
