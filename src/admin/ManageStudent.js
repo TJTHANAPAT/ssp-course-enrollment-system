@@ -3,6 +3,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import * as auth from './functions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
+import * as deleteStudent from './functions/deleteStudentFunction';
 import LoadingPage from '../components/LoadingPage';
 import ErrorPage from '../components/ErrorPage';
 import Footer from '../components/Footer';
@@ -27,17 +28,18 @@ class GetStudentData extends React.Component {
             const courseYearArr = systemConfig.courseYears;
             this.setState({
                 selectedCourseYear: selectedCourseYear,
-                courseYearArr: courseYearArr,
-                isLoading: false
+                courseYearArr: courseYearArr
             })
         }
         catch (err) {
             console.error(err);
             this.setState({
-                isLoading: false,
                 isError: true,
                 errorMessage: err
-            })
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
         }
     }
 
@@ -103,7 +105,10 @@ class GetStudentData extends React.Component {
                     if (doc.exists) {
                         resolve(doc.data());
                     } else {
-                        resolve({ courseID: courseID, courseName: 'รายวิชานี้อาจถูกลบออกจากระบบ โปรดติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม' })
+                        resolve({
+                            courseID: courseID,
+                            courseName: 'รายวิชานี้อาจถูกลบออกจากระบบ โปรดติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม'
+                        });
                     }
                 })
                 .catch(err => {
@@ -294,6 +299,7 @@ class GetStudentData extends React.Component {
                         {studentEnrolledCourseDetail}
                         <p><i>ทำการลงทะเบียนเมื่อ {timestamp}</i></p>
                         <button type="submit" className="btn btn-purple">บันทึก</button>
+                        <button className="btn btn-danger ml-2" onClick={this.deleteStudentData}>ลบทิ้ง</button>
                     </form>
                 </div>
             )
@@ -349,6 +355,62 @@ class GetStudentData extends React.Component {
             })
     }
 
+    deleteStudentData = async (event) => {
+        try {
+            event.preventDefault();
+            const confirmDelete = window.confirm('คุณยืนยันที่จะลบข้อมูลของนักเรียนคนนี้หรือไม่');
+            if (confirmDelete) {
+                const { studentData, lastSearchCourseYear } = this.state;
+                const { studentID, enrolledCourse } = studentData;
+                const courseYear = lastSearchCourseYear;
+                const studentEnrolledCourse = enrolledCourse;
+                console.log(`Deleting ${studentID}...`)
+                this.setState({ isLoading: true });
+                let enrolledCourseID = [];
+                if (studentData.studentEnrollPlan !== undefined) {
+                    const daysArr = [
+                        'sunday',
+                        'monday',
+                        'tuesday',
+                        'wednesday',
+                        'thursday',
+                        'friday',
+                        'saturday'
+                    ]
+
+                    for (let i = 0; i < daysArr.length; i++) {
+                        const day = daysArr[i];
+                        if (studentEnrolledCourse[day].length > 0) {
+                            for (const courseID of studentEnrolledCourse[day]) {
+                                enrolledCourseID.push(courseID)
+                                // await deleteStudent.updateCourseEnrolledIndividualCourse(courseID,courseYear)
+                            }
+                        }
+                    }
+
+                } else {
+                    enrolledCourseID.push(enrolledCourse)
+                }
+                console.log(enrolledCourseID)
+                for (const courseID of enrolledCourseID) {
+                    await deleteStudent.updateCourseEnrolledIndividualCourse(courseYear, courseID);
+                }
+                await deleteStudent.deleteStudentData(studentID, courseYear)
+                alert('ข้อมูลของนักเรียนคนนี้ถูกลบทิ้งสำเร็จแล้ว')
+                window.location.reload();
+                this.setState({ isLoading: false });
+            }
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isLoading: false,
+                isError: true,
+                errorMessage: err
+            })
+        }
+    }
+
     render() {
         const { isLoading, isError, errorMessage } = this.state;
         if (isLoading) {
@@ -367,7 +429,7 @@ class GetStudentData extends React.Component {
             return (
                 <div className="body body-center bg-gradient">
                     <div className="wrapper text-left">
-                        <h1>ค้นหาข้อมูลนักเรียน</h1>
+                        <h1>การจัดการนักเรียน</h1>
                         <p>เลือกปีการศึกษาและกรอกเลขประจำตัวนักเรียนเพื่อดูข้อมูล</p>
                         <select className="form-control mb-3" defaultValue={selectedCourseYear} onChange={this.selectCourseYear}>
                             {courseYearSelector}
