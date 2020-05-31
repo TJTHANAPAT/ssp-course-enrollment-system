@@ -9,55 +9,42 @@ import deleteCourse from './functions/deleteCourseFunction';
 
 class EditCourse extends React.Component {
     state = {
-        isLoadingComplete: false
+        isLoading: true
     }
 
-    componentDidMount = () => {
-        auth.checkAuthState()
-            .then(() => {
-                return system.getURLParam('courseYear')
+    componentDidMount = async () => {
+        try {
+            await auth.checkAuthState();
+            const courseYear = await system.getURLParam('courseYear');
+            const courseID = await system.getURLParam('courseID');
+            const course = await system.getCourseData(courseYear, courseID);
+            const getSystemConfig = await system.getSystemConfig();
+            const courseYearsArr = getSystemConfig.systemConfig.courseYears;
+            const getCourseYearGrades = await system.getCourseYearGrades(courseYear, courseYearsArr);
+            this.setState({
+                courseYear: courseYear,
+                gradesArr: getCourseYearGrades.grades,
+
+                courseName: course.courseName,
+                courseID: course.courseID,
+                courseCapacity: course.courseCapacity,
+                courseTeacher: course.courseTeacher,
+                courseGrade: course.courseGrade,
+                courseDay: course.courseDay
             })
-            .then(res => {
-                const courseYear = res;
-                this.setState({ courseYear: courseYear });
-                return system.getURLParam('courseID');
-            })
-            .then(res => {
-                const courseID = res;
-                const { courseYear } = this.state;
-                return system.getCourseData(courseYear, courseID);
-            })
-            .then(course => {
-                this.setState({
-                    courseName: course.courseName,
-                    courseID: course.courseID,
-                    courseCapacity: course.courseCapacity,
-                    courseTeacher: course.courseTeacher,
-                    courseGrade: course.courseGrade,
-                    courseDay: course.courseDay
-                })
-                return system.getSystemConfig();
-            })
-            .then(res => {
-                const courseYearsArr = res.systemConfig.courseYears;
-                const { courseYear } = this.state;
-                return system.getCourseYearGrades(courseYear, courseYearsArr);
-            })
-            .then(res => {
-                this.setState({
-                    gradesArr: res.grades,
-                    isLoadingComplete: true
-                })
-                this.setCheckBoxGrade();
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
+            this.setState({ isLoading: false });
+            this.setCheckBoxGrade();
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     goBack = () => {
@@ -141,7 +128,7 @@ class EditCourse extends React.Component {
                     <input type="number" pattern="[0-9]*" className="form-control" id="courseCapacity" placeholder="จำนวนรับสมัคร" onChange={this.updateInput} value={this.state.courseCapacity} required />
                 </div>
                 <button type="submit" className="btn btn-purple">บันทึก</button>
-                <button onClick={this.initDeleteCourse} className="btn btn-danger ml-2">ลบทิ้ง</button>
+                <button onClick={this.deleteCourse} className="btn btn-danger ml-2">ลบทิ้ง</button>
                 <button onClick={this.goBack} className="btn btn-secondary ml-2">ย้อนกลับ</button>
             </form>
         )
@@ -235,7 +222,7 @@ class EditCourse extends React.Component {
     sortCourseDayArr = (courseDayArr) => {
         const daysArr = [
             'sunday',
-            'monday', 
+            'monday',
             'tuesday',
             'wednesday',
             'thursday',
@@ -288,99 +275,40 @@ class EditCourse extends React.Component {
         );
     }
 
+
     // Functions for deleting course data.
-    deleteCourse = (event) => {
-        event.preventDefault();
-        const { courseYear, courseID } = this.state;
-        console.log(courseYear, courseID)
-        this.setState({ isLoadingComplete: false });
-        deleteCourse(courseYear, courseID)
-            .then(() => {
-                this.setState({
-                    isLoadingComplete: true,
-                    isDeleteCourseComplete: true
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
-    }
-    initDeleteCourse = () => {
-        this.setState({ isDeleteCourse: true });
-    }
-    ConfirmDeleteCoursePage = () => {
-        const { courseID, courseName, courseYear } = this.state
-        return (
-            <div className="body body-center bg-gradient">
-                <div className="wrapper">
-                    <div className="row align-items-center">
-                        <div className="col-sm-3 text-center mb-3">
-                            <i className="fa fa-exclamation-triangle fa-5x" aria-hidden="false"></i>
-                        </div>
-                        <div className="col-sm-9 text-left">
-                            <h2>ลบรายวิชา {courseID} {courseName}</h2>
-                            <p>การกระทำนี้ไม่สามารถย้อนกลับได้ คุณกำลังลบรายวิชา {courseID} {courseName} ปีการศึกษา {courseYear} ข้อมูลของนักเรียนที่ได้ทำการลงทะเบียนในรายวิชานี้ไปแล้วนั้นจะถูกลบด้วยและไม่สามารถกู้คืนได้ กรุณายืนยันที่จะลบรายวิชานี้ทิ้ง</p>
-                            {this.ConfirmDeleteCourseForm()}
-                        </div>
-                    </div>
-                </div>
-                <Footer />
-            </div>
-        )
-    }
-    ConfirmDeleteCourseForm = () => {
-        const { courseID, isDeleteCourseConfirm } = this.state;
-        const setTimeOutThenDo = (timeout, callback) => {
-            setTimeout(() => {
-                callback()
-            }, timeout)
-        }
-        let handleChangeConfirmDelete = (event) => {
-            const iconConfirmStatus = document.getElementById('iconConfirmStatus')
-            iconConfirmStatus.className = 'fa fa-circle-o-notch fa-spin fa-fw';
-            this.setState({ isDeleteCourseConfirm: false });
-            const confirmText = event.target.value
-            setTimeOutThenDo(300, () => {
-                if (confirmText === courseID) {
-                    iconConfirmStatus.className = 'fa fa-check fa-fw';
-                    this.setState({ isDeleteCourseConfirm: true });
+    deleteCourse = async (event) => {
+        try {
+            event.preventDefault();
+            const confirmDelete = window.confirm('คุณยืนยันที่จะลบรายวิชานี้หรือไม่');
+            if (confirmDelete) {
+                this.setState({ isLoading: true });
+                const { courseYear, courseID } = this.state;
+                console.log(`Deleting course ${courseID}...`)
+                const courseData = await system.getCourseData(courseYear, courseID);
+                console.log(courseData);
+                if (courseData.courseEnrolled === 0) {
+                    await deleteCourse(courseYear, courseID);
+                    this.setState({ isDeleteCourseComplete: true });
                 } else {
-                    iconConfirmStatus.className = 'fa fa-times fa-fw';
-                    this.setState({ isDeleteCourseConfirm: false });
+                    const err = 'คุณต้องลบข้อมูลของนักเรียนทุกคนในรายวิชานี้ทิ้งก่อนทำการลบรายวิชานี้';
+                    throw err;
                 }
-            })
-        }
-        let btnDeleteCourse = () => {
-            if (isDeleteCourseConfirm) {
-                return <button className="btn btn-danger" type="submit">ลบทิ้ง</button>
-            } else {
-                return <button className="btn btn-danger" disabled>ลบทิ้ง</button>
             }
+
         }
-        let cancelDeleteProcess = () => {
-            this.setState({ isDeleteCourse: false });
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
         }
-        return (
-            <form onSubmit={this.deleteCourse} autoComplete="off">
-                <span>พิมพ์ '{courseID}' เพื่อยืนยัน</span>
-                <div className="input-group mt-2">
-                    <div className="input-group-prepend">
-                        <div className="input-group-text"><i id="iconConfirmStatus" className="fa fa-times fa-fw"></i></div>
-                    </div>
-                    <input type="text" className="form-control" id="confirmDeleteCourse" placeholder={courseID} onChange={handleChangeConfirmDelete} value={this.state.confirmDeleteCourse} required />
-                </div>
-                <div className="mt-2">
-                    {btnDeleteCourse()}
-                    <button className="btn btn-secondary ml-2" onClick={cancelDeleteProcess} type="button">ย้อนกลับ</button>
-                </div>
-            </form>
-        )
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
+
     CompleteDeleteCoursePage = () => {
         const { courseID, courseName, courseYear } = this.state
         return (
@@ -392,7 +320,7 @@ class EditCourse extends React.Component {
                         </div>
                         <div className="col-sm-9 text-left">
                             <h2>ลบรายวิชา {courseID} {courseName} สำเร็จ</h2>
-                            <p>รายวิชา {courseID} {courseName} ปีการศึกษา {courseYear} และข้อมูลของนักเรียนที่ได้ทำการลงทะเบียนในรายวิชานี้ถูกลบทิ้งสำเร็จแล้ว</p>
+                            <p>รายวิชา {courseID} {courseName} ปีการศึกษา {courseYear} ถูกลบทิ้งสำเร็จแล้ว</p>
                         </div>
                     </div>
                     <button className="btn btn-wrapper-bottom btn-green" onClick={this.goBack}>ย้อนกลับ</button>
@@ -403,22 +331,20 @@ class EditCourse extends React.Component {
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage, isDeleteCourse, isDeleteCourseComplete } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage, isDeleteCourseComplete } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
         } else if (isDeleteCourseComplete) {
             return this.CompleteDeleteCoursePage();
-        } else if (isDeleteCourse) {
-            return this.ConfirmDeleteCoursePage();
         } else {
             const { courseID, courseYear } = this.state
             return (
                 <div className="body bg-gradient">
                     <div className="wrapper">
                         <h1>แก้ไขรายวิชา {courseID}</h1>
-                        <p>คุณกำลังแก้ไขรายวิชา {courseID} ปีการศึกษา {courseYear}.</p>
+                        <p>คุณกำลังแก้ไขรายวิชา {courseID} ปีการศึกษา {courseYear}</p>
                         {this.UpdateCourseForm()}
                     </div>
                     <Footer />
