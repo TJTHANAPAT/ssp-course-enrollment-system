@@ -11,49 +11,41 @@ import * as system from '../functions/systemFunctions';
 
 class SystemCourseYearConfig extends React.Component {
     state = {
-        isLoadingComplete: false,
+        isLoading: true,
         isSaveFirstInitSystem: false,
-        courseYearAdd: '',
+        courseYearAdd: ''
     }
-    componentDidMount = () => {
-        auth.checkAuthState()
-            .then(res => {
-                const user = res.user;
-                const isLogin = res.isLogin;
+    componentDidMount = async () => {
+        try {
+            await auth.checkAuthState();
+            const getSystemConfig = await system.getSystemConfig();
+            const isFirstInitSystem = getSystemConfig.isFirstInitSystem;
+            this.setState({ isFirstInitSystem: isFirstInitSystem });
+            if (!isFirstInitSystem) {
+                const systemConfig = getSystemConfig.systemConfig;
                 this.setState({
-                    currentUser: user,
-                    isLogin: isLogin,
-                })
-                return system.getSystemConfig(false)
-            })
-            .then(res => {
-                const isFirstInitSystem = res.isFirstInitSystem;
-                this.setState({ isFirstInitSystem: isFirstInitSystem });
-                if (!isFirstInitSystem) {
-                    const systemConfig = res.systemConfig;
-                    this.setState({
-                        isLoadingComplete: true,
-                        currentCourseYear: systemConfig.currentCourseYear,
-                        courseYearsArr: systemConfig.courseYears
-                    });
-                } else {
-                    console.warn('No course year config has ever been found in database. It will be initialized after saving.')
-                    this.setState({
-                        isSaveFirstInitSystem: true,
-                        isLoadingComplete: true,
-                        currentCourseYear: '',
-                        courseYearsArr: []
-                    })
-                }
-            })
-            .catch(err => {
-                console.error(err);
+                    currentCourseYear: systemConfig.currentCourseYear,
+                    courseYearsArr: systemConfig.courseYears
+                });
+            } else {
+                console.warn('No course year config has ever been found in database. It will be initialized after saving.')
                 this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
+                    isSaveFirstInitSystem: true,
+                    currentCourseYear: '',
+                    courseYearsArr: []
+                });
+            }
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     goBack = (event) => {
@@ -65,7 +57,6 @@ class SystemCourseYearConfig extends React.Component {
         this.setState({
             [event.target.id]: event.target.value
         })
-        console.log(event.target.id, ':', event.target.value)
     }
 
     addNewCourseYear = (event) => {
@@ -214,7 +205,7 @@ class SystemCourseYearConfig extends React.Component {
                 </div>
             )
         } else {
-            return <p>No course year has been added.</p>
+            return <p>ยังไม่มีปีการศึกษาที่ถูกเพิ่ม</p>
         }
     }
 
@@ -232,8 +223,8 @@ class SystemCourseYearConfig extends React.Component {
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
