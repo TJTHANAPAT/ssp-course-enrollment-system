@@ -83,7 +83,7 @@ class SystemCourseYearConfig extends React.Component {
             for (let i = 0; i < courseYearsArr.length; i++) {
                 courseYearsArrSortedYear.push(courseYearsArr[i].year);
             }
-            courseYearsArrSortedYear.sort((a, b) => a - b);
+            courseYearsArrSortedYear.sort();
             const courseYearsArrSorted = [];
             for (let i = 0; i < courseYearsArrSortedYear.length; i++) {
                 const year = courseYearsArrSortedYear[i];
@@ -208,7 +208,7 @@ class SystemCourseYearConfig extends React.Component {
                     <ul className="list-group admin">{courseYearSelector}</ul>
                     <p className="mt-1">
                         <i>
-                            คำเตือน: เมื่อลบปีการศึกษาทิ้ง ข้อมูลของรายวิชาและข้อมูลของนักเรียนที่ลงทะเบียนไว้ในปีการศึกษาที่ถูกลบจะยังคงอยู่ หากต้องการลบข้อมูลดังกล่าวด้วย กรุณาลบทุกรายวิชาทิ้งก่อนทำการลบปีการศึกษา
+                            คำเตือน: เมื่อลบปีการศึกษาทิ้ง ข้อมูลของรายวิชาและข้อมูลของนักเรียนที่ลงทะเบียนไว้ในปีการศึกษาที่ถูกลบจะยังคงอยู่ หากต้องการลบข้อมูลดังกล่าวด้วย กรุณาลบข้อมูลของทุกรายวิชาทิ้งและนักเรียนทุกคนก่อนทำการลบปีการศึกษา
                         </i>
                     </p>
                 </div>
