@@ -10,14 +10,7 @@ import * as system from '../functions/systemFunctions';
 
 class ViewCourse extends React.Component {
     state = {
-        courseName: '',
-        courseID: '',
-        courseCapacity: '',
-        courseTeacher: '',
-        courseGrade: [],
-        gradesArr: [],
         isLoading: true,
-        studentsArr: []
     }
 
     componentDidMount = async () => {
