@@ -1,26 +1,6 @@
 import firebase from 'firebase/app';
 import 'firebase/database';
-
-const getCourseData = (courseYear = '', courseID = '') => {
-    const db = firebase.firestore();
-    const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)
-    return new Promise((resolve, reject) => {
-        courseRef.get()
-            .then(doc => {
-                if (doc.exists) {
-                    resolve(doc.data());
-                } else {
-                    const err = `Course ${courseID} data in ${courseYear} has not been found in database.`
-                    reject(err);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                const errorMessage = `Firebase failed getting course data of course ${courseID} in ${courseYear}. ${err.message}`;
-                reject(errorMessage);
-            })
-    })
-}
+import { getCourseData } from '../systemFunctions';
 
 export function updateCourseEnrolledIndividualCourse(courseYear, courseID) {
     return new Promise((resolve, reject) => {

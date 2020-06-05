@@ -1,9 +1,9 @@
 import React from 'react';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
-import * as auth from './functions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
-import * as deleteStudent from './functions/deleteStudentFunction';
+import * as auth from '../functions/adminFunctions/authenticationFuctions';
+import * as deleteStudent from '../functions/adminFunctions/deleteStudentFunction';
 import LoadingPage from '../components/LoadingPage';
 import ErrorPage from '../components/ErrorPage';
 import Footer from '../components/Footer';

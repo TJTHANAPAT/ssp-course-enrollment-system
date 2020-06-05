@@ -16,7 +16,7 @@ const checkCourseExists = (courseYear, courseID) => {
             })
             .catch(err => {
                 console.error(err);
-                const errorMessage = `Checking if course ${courseID} exists in course year ${courseYear} failed. ${err.message}`;
+                const errorMessage = `Failed checking if course ${courseID} exists in course year ${courseYear}. ${err.message}`;
                 reject(errorMessage);
             })
     })

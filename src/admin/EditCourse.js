@@ -2,10 +2,10 @@ import React from 'react';
 import LoadingPage from '../components/LoadingPage';
 import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
-import * as auth from './functions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
-import updateCourse from './functions/updateCourseFunction';
-import deleteCourse from './functions/deleteCourseFunction';
+import * as auth from '../functions/adminFunctions/authenticationFuctions';
+import updateCourse from '../functions/adminFunctions/updateCourseFunction';
+import deleteCourse from '../functions/adminFunctions/deleteCourseFunction';
 
 class EditCourse extends React.Component {
     state = {

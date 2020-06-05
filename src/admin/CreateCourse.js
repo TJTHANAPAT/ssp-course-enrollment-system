@@ -4,9 +4,9 @@ import LoadingPage from '../components/LoadingPage';
 import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
 
-import * as auth from './functions/authenticationFuctions';
+import * as auth from '../functions/adminFunctions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
-import createCourse from './functions/createCourseFunction';
+import createCourse from '../functions/adminFunctions/createCourseFunction';
 
 class CreateCourse extends React.Component {
     state = {

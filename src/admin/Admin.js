@@ -4,8 +4,8 @@ import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
 import SystemManagement from './SystemManagement';
 import Register from './Register';
-import * as auth from './functions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
+import * as auth from '../functions/adminFunctions/authenticationFuctions';
 
 
 class Admin extends React.Component {
@@ -23,7 +23,7 @@ class Admin extends React.Component {
                 const user = await auth.checkAuthState(false);
                 this.setState({
                     currentUser: user,
-                    isSignedIn: !!user,
+                    isSignedIn: !!user
                 })
             }
         }
@@ -49,7 +49,7 @@ class Admin extends React.Component {
         try {
             event.preventDefault()
             const { email, password } = this.state;
-            this.setState({isLoading: true});
+            this.setState({ isLoading: true });
             const user = await auth.signInWithEmailAndPassword(email, password);
             this.setState({
                 currentUser: user,
@@ -94,7 +94,13 @@ class Admin extends React.Component {
     }
 
     render() {
-        const { isLoading, isFirstInitSystem, isSignedIn, isError, errorMessage } = this.state;
+        const {
+            isLoading,
+            isError,
+            errorMessage,
+            isFirstInitSystem,
+            isSignedIn
+        } = this.state;
         if (isLoading) {
             return <LoadingPage />
         } else if (isError) {

@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
 import Admin from './Admin';
 
-import * as auth from './functions/authenticationFuctions';
+import * as auth from '../functions/adminFunctions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
 
 class SystemManagement extends React.Component {

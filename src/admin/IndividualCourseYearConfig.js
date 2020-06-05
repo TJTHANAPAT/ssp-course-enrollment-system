@@ -4,7 +4,7 @@ import 'firebase/firestore';
 import LoadingPage from '../components/LoadingPage';
 import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
-import * as auth from './functions/authenticationFuctions';
+import * as auth from '../functions/adminFunctions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
 
 class GradeConfig extends React.Component {
