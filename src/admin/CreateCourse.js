@@ -10,14 +10,8 @@ import createCourse from '../functions/adminFunctions/createCourseFunction';
 
 class CreateCourse extends React.Component {
     state = {
-        courseName: '',
-        courseID: '',
-        courseCapacity: '',
-        courseTeacher: '',
         courseGrade: [],
-        courseDay: [],
-        gradesArr: [],
-        isLoadingComplete: false
+        isLoading: true
     }
 
     componentDidMount = async () => {
@@ -25,43 +19,26 @@ class CreateCourse extends React.Component {
             await auth.checkAuthState()
             const courseYear = await system.getURLParam('courseYear');
             const getSystemConfig = await system.getSystemConfig();
-            const courseYearsArr = getSystemConfig.systemConfig.courseYears;
-            
+            const systemConfig = getSystemConfig.systemConfig;
+            const courseYearsArr = systemConfig.courseYears;
+            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, courseYearsArr);
+            const courseYearConfig = getCourseYearConfig.config;
+            this.setState({
+                courseYear: courseYear,
+                courseYearConfig: courseYearConfig,
+                gradesArr: courseYearConfig.grades
+            })
         }
         catch (err) {
-
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
         }
         finally {
-
+            this.setState({ isLoading: false });
         }
-        auth.checkAuthState()
-            .then(() => {
-                return system.getURLParam('courseYear');
-            })
-            .then(res => {
-                const courseYear = res;
-                this.setState({ courseYear: courseYear });
-                return system.getSystemConfig();
-            })
-            .then(res => {
-                const courseYearsArr = res.systemConfig.courseYears;
-                const { courseYear } = this.state;
-                return system.getCourseYearGrades(courseYear, courseYearsArr);
-            })
-            .then(res => {
-                this.setState({
-                    gradesArr: res.grades,
-                    isLoadingComplete: true
-                })
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
     }
 
     goBack = (event) => {
@@ -95,8 +72,8 @@ class CreateCourse extends React.Component {
             courseCapacity: parseInt(courseCapacity),
             courseEnrolled: 0
         }
-        if (courseGrade.length !== 0 && courseDay.length !== 0) {
-            this.setState({ isLoadingComplete: false });
+        if (courseGrade.length !== 0) {
+            this.setState({ isLoading: true });
             createCourse(courseYear, courseData)
                 .then(() => {
                     this.setState({
@@ -106,7 +83,7 @@ class CreateCourse extends React.Component {
                         courseDay: [],
                         courseCapacity: '',
                         courseTeacher: '',
-                        isLoadingComplete: true
+                        isLoading: false
                     });
                     let courseGradeCheckBoxes = document.getElementsByName('courseGradeCheckBox')
                     for (let i = 0; i < courseGradeCheckBoxes.length; i++) {
@@ -123,13 +100,13 @@ class CreateCourse extends React.Component {
                 .catch(err => {
                     console.error(err);
                     this.setState({
-                        isLoadingComplete: true,
+                        isLoading: false,
                         isError: true,
                         errorMessage: err
                     })
                 })
         } else {
-            alert('ต้องมีอย่างน้อยหนึ่งชั้นเรียนและหนึ่งวันสำหรับรายวิชานี้');
+            alert('ต้องมีอย่างน้อยหนึ่งชั้นเรียนสำหรับรายวิชานี้');
         }
     }
 
@@ -185,61 +162,6 @@ class CreateCourse extends React.Component {
         );
     }
 
-    handleChangeCourseDay = (event) => {
-        const courseDayArr = this.state.courseDay
-        if (event.target.checked) {
-            console.log(`Checked Day ${event.target.value}`)
-            courseDayArr.push(event.target.value)
-            let courseDayArrSorted = this.sortCourseDayArr(courseDayArr);
-            this.setState({ courseDay: courseDayArrSorted })
-            console.log('Current Course Day: ', courseDayArrSorted);
-        } else {
-            console.log(`Unchecked Day ${event.target.value}`)
-            for (var i = 0; i < courseDayArr.length; i++) {
-                if (courseDayArr[i] === event.target.value) {
-                    courseDayArr.splice(i, 1);
-                }
-            }
-            this.setState({ courseDay: courseDayArr })
-            console.log('Current Course Day: ', this.state.courseDay);
-        }
-    }
-
-    sortCourseDayArr = (courseDayArr) => {
-        const daysArr = [
-            'sunday',
-            'monday',
-            'tuesday',
-            'wednesday',
-            'thursday',
-            'friday',
-            'saturday'
-        ]
-        let courseDayArrSorted = []
-        for (let i = 0; i < daysArr.length; i++) {
-            for (let j = 0; j < courseDayArr.length; j++) {
-                if (daysArr[i] === courseDayArr[j]) {
-                    courseDayArrSorted.push(courseDayArr[j])
-                }
-            }
-        }
-        return courseDayArrSorted
-    }
-
-    uncheckAllDay = (event) => {
-        event.preventDefault();
-        console.log(this.state.courseDay)
-        let checkboxes = document.getElementsByName('courseDayCheckBox')
-        for (let i = 0; i < checkboxes.length; i++) {
-            const checkbox = checkboxes[i];
-            checkbox.checked = false;
-        }
-        const courseDay = [];
-        this.setState({ courseDay: courseDay });
-        console.log('Uncheck All');
-        console.log('Current Course Grade: ', courseDay);
-    }
-
     daySelector = () => {
         const daysArr = [
             { en: 'sunday', th: 'วันอาทิตย์' },
@@ -264,17 +186,19 @@ class CreateCourse extends React.Component {
     createCourseForm = () => {
         return (
             <form onSubmit={this.createCourse}>
-                <div className="form-group">
-                    <label htmlFor="courseID">รหัสวิชา</label>
-                    <input type="text" className="form-control" id="courseID" placeholder="รหัสวิชา" onChange={this.updateInput} value={this.state.courseID} required />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="courseName">ชื่อรายวิชา</label>
-                    <input type="text" className="form-control" id="courseName" placeholder="ชื่อรายวิชา" onChange={this.updateInput} value={this.state.courseName} required />
+                <div className="form-row">
+                    <div className="form-group col-sm-3">
+                        <label htmlFor="courseID">รหัสวิชา</label>
+                        <input type="text" className="form-control" id="courseID" placeholder="รหัสวิชา" onChange={this.updateInput} required />
+                    </div>
+                    <div className="form-group col-sm-9">
+                        <label htmlFor="courseName">ชื่อรายวิชา</label>
+                        <input type="text" className="form-control" id="courseName" placeholder="ชื่อรายวิชา" onChange={this.updateInput} required />
+                    </div>
                 </div>
                 <div className="form-group">
                     <label htmlFor="courseTeacher">ชื่อผู้สอน</label>
-                    <input type="text" className="form-control" id="courseTeacher" placeholder="ชื่อผู้สอน" onChange={this.updateInput} value={this.state.courseTeacher} required />
+                    <input type="text" className="form-control" id="courseTeacher" placeholder="ชื่อผู้สอน" onChange={this.updateInput} required />
                 </div>
                 <div className="form-group">
                     <label htmlFor="courseGrade">ระดับชั้น</label><br />
@@ -287,16 +211,17 @@ class CreateCourse extends React.Component {
                 </div>
                 <div className="form-group">
                     <label htmlFor="courseCapacity">จำนวนรับสมัคร</label>
-                    <input type="number" pattern="[0-9]*" className="form-control" id="courseCapacity" placeholder="จำนวนรับสมัคร" onChange={this.updateInput} value={this.state.courseCapacity} required />
+                    <input type="number" pattern="[0-9]*" className="form-control" id="courseCapacity" placeholder="จำนวนรับสมัคร" onChange={this.updateInput} required />
                 </div>
-                <button type="submit" className="btn btn-purple">เพิ่ม</button> <button onClick={this.goBack} className="btn btn-secondary">ย้อนกลับ</button>
+                <button type="submit" className="btn btn-purple">เพิ่ม</button>
+                <button onClick={this.goBack} className="btn btn-secondary ml-2">ย้อนกลับ</button>
             </form>
         )
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
