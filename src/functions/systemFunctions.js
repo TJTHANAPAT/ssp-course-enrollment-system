@@ -126,7 +126,6 @@ export function getCourseYearConfig(courseYear = '', courseYearsArr, rejectIfFir
         }
 
     })
-
 }
 
 export function getCourseData(courseYear = '', courseID = '') {

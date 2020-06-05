@@ -1,6 +1,6 @@
 import React from 'react';
 import { daysArr, translateDayToThai } from '../functions/systemFunctions';
-import * as enroll from './enrollCourseFunction';
+import * as enroll from '../functions/enrollCourseFunction';
 import LoadingPage from '../components/LoadingPage';
 import ErrorPage from '../components/ErrorPage';
 import Footer from '../components/Footer';

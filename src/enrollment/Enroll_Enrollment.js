@@ -1,6 +1,6 @@
 import React from 'react';
 import * as system from '../functions/systemFunctions';
-import * as enroll from './enrollCourseFunction'
+import * as enroll from '../functions/enrollCourseFunction'
 import LoadingPage from '../components/LoadingPage';
 import ErrorPage from '../components/ErrorPage';
 import StudentInfoEnrollForm from './Enroll_StudentInfoForm';

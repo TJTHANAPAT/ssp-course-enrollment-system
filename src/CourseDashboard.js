@@ -2,7 +2,7 @@ import React from 'react';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import * as system from './functions/systemFunctions';
-import * as enroll from './enrollment/enrollCourseFunction'
+import * as enroll from './functions/enrollCourseFunction'
 import LoadingPage from './components/LoadingPage';
 import ErrorPage from './components/ErrorPage';
 import Footer from './components/Footer';

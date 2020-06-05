@@ -20,7 +20,20 @@ class CreateCourse extends React.Component {
         isLoadingComplete: false
     }
 
-    componentDidMount = () => {
+    componentDidMount = async () => {
+        try {
+            await auth.checkAuthState()
+            const courseYear = await system.getURLParam('courseYear');
+            const getSystemConfig = await system.getSystemConfig();
+            const courseYearsArr = getSystemConfig.systemConfig.courseYears;
+            
+        }
+        catch (err) {
+
+        }
+        finally {
+
+        }
         auth.checkAuthState()
             .then(() => {
                 return system.getURLParam('courseYear');
