@@ -1,8 +1,6 @@
 import React from 'react';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
 import * as system from './functions/systemFunctions';
-import * as enroll from './functions/enrollCourseFunction'
+import { getCoursesData } from './functions/enrollCourseFunction';
 import LoadingPage from './components/LoadingPage';
 import ErrorPage from './components/ErrorPage';
 import Footer from './components/Footer';
@@ -13,74 +11,37 @@ class Dashboard extends React.Component {
         courses: [],
         coursesData: [],
         gradeFilter: 'all',
-        isLoadingComplete: false,
-        isError: false,
+        isLoading: true,
     }
 
-    componentDidMount = () => {
-        system.getSystemConfig()
-            .then(res => {
-                const systemConfig = res.systemConfig;
-                const courseYear = systemConfig.currentCourseYear;
-                this.setState({
-                    courseYear: courseYear,
-                    systemConfig: systemConfig
-                });
-                return enroll.checkCourseYearAvailable(courseYear, systemConfig);
+    componentDidMount = async () => {
+        try {
+            const courseYear = await system.getURLParam('courseYear');
+            const getSystemConfig = await system.getSystemConfig();
+            const systemConfig = getSystemConfig.systemConfig;
+            const courseYearsArr = systemConfig.courseYears;
+            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, courseYearsArr);
+            const courseYearConfig = getCourseYearConfig.config;
+            const coursesData = await getCoursesData(courseYear);
+            const coursesDataFiltered = await this.filterCoursesDataByGrade(coursesData, 'all');
+            this.setState({
+                courseYear: courseYear,
+                courseYearConfig: courseYearConfig,
+                gradesArr: courseYearConfig.grades,
+                coursesData: coursesData,
+                courses: coursesDataFiltered
+            });
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
             })
-            .then(res => {
-                const { systemConfig, courseYear } = this.state;
-                const courseYearsArr = systemConfig.courseYears;
-                return system.getCourseYearGrades(courseYear, courseYearsArr)
-            })
-            .then(res => {
-                const { courseYear } = this.state;
-                this.setState({ gradesArr: res.grades });
-                return this.getCoursesData(courseYear);
-            })
-            .then(res => {
-                const coursesData = res;
-                this.setState({ coursesData: coursesData });
-                return this.filterCoursesDataByGrade(coursesData, 'all');
-            })
-            .then(res => {
-                const coursesDataFiltered = res;
-                this.setState({
-                    courses: coursesDataFiltered,
-                    isLoadingComplete: true
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
-    }
-
-    getCoursesData = (courseYear) => {
-        const db = firebase.firestore();
-        const courseRef = db.collection(courseYear).doc('course').collection('course');
-        return new Promise((resolve, reject) => {
-            courseRef.get()
-                .then(snapshot => {
-                    if (snapshot.empty) {
-                        const err = `ยังไม่มีรายวิชาถูกเพิ่มในปีการศึกษา ${courseYear}`
-                        reject(err);
-                    }
-                    let coursesArr = [];
-                    snapshot.forEach(doc => {
-                        coursesArr.push(doc.data());
-                    });
-                    resolve(coursesArr);
-                })
-                .catch(err => {
-                    const errorMessage = `Error getting courses data in course year ${courseYear} from database. ${err.message}`;
-                    reject(errorMessage);
-                });
-        })
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     filterCoursesDataByGrade = (coursesData, grade) => {
@@ -118,7 +79,6 @@ class Dashboard extends React.Component {
     }
 
     courseDashboard = (coursesData) => {
-        const { courseYear } = this.state;
         if (coursesData.length === 0) {
             return (
                 <div className="mt-4 text-center">
@@ -127,49 +87,34 @@ class Dashboard extends React.Component {
             )
         } else {
             let courseDashboard = coursesData.map((course, i) => {
-                let courseStatus = null;
-                let btnEnroll = null;
+                let courseStatus;
                 if (course.courseEnrolled < course.courseCapacity) {
                     courseStatus = course.courseCapacity - course.courseEnrolled
-                    let courseEnrollLink = `/course/enroll?courseYear=${courseYear}&courseID=${course.courseID}`
-                    btnEnroll = () => {
-                        return (<a className="btn btn-enroll btn-purple" href={courseEnrollLink}>ลงทะเบียน</a>);
-                    }
                 } else {
                     courseStatus = 'เต็ม'
-                    btnEnroll = () => {
-                        return (<button className="btn btn-enroll btn-purple" disabled>เต็ม</button>);
-                    }
                 }
                 return (
-                    <div className="course row" key={i}>
-                        <div className="col-md-10">
+                    <div className="course row align-items-center" key={i}>
+                        <div className="detail col-sm-6">
+                            <span className="course-name">{course.courseID} {course.courseName}</span>
+                            <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="true"></i> {course.courseTeacher}</span>
+                            <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="true"></i> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
+                        </div>
+                        <div className="col-sm-6">
                             <div className="row align-items-center">
-                                <div className="detail col-sm-6">
-                                    <span className="course-name">{course.courseID} {course.courseName}</span>
-                                    <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="true"></i> {course.courseTeacher}</span>
-                                    <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="true"></i> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
+                                <div className="col stat">
+                                    <span className="stat-description">รับสมัคร</span>
+                                    <span className="stat-number">{course.courseCapacity}</span>
                                 </div>
-                                <div className="col-sm-6">
-                                    <div className="row align-items-center">
-                                        <div className="col stat">
-                                            <span className="stat-description">รับสมัคร</span>
-                                            <span className="stat-number">{course.courseCapacity}</span>
-                                        </div>
-                                        <div className="col stat">
-                                            <span className="stat-description">สมัครแล้ว</span>
-                                            <span className="stat-number">{course.courseEnrolled}</span>
-                                        </div>
-                                        <div className="col stat">
-                                            <span className="stat-description">ที่ว่าง</span>
-                                            <span className="stat-number">{courseStatus}</span>
-                                        </div>
-                                    </div>
+                                <div className="col stat">
+                                    <span className="stat-description">สมัครแล้ว</span>
+                                    <span className="stat-number">{course.courseEnrolled}</span>
+                                </div>
+                                <div className="col stat">
+                                    <span className="stat-description">ที่ว่าง</span>
+                                    <span className="stat-number">{courseStatus}</span>
                                 </div>
                             </div>
-                        </div>
-                        <div className="course-btn col-md-2">
-                            {btnEnroll()}
                         </div>
                     </div>
                 )
@@ -179,8 +124,8 @@ class Dashboard extends React.Component {
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'home'} />
@@ -192,8 +137,7 @@ class Dashboard extends React.Component {
                     <div className="wrapper">
                         <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
                         <h2>โรงเรียนสตรีสมุทรปราการ</h2>
-                        <h4>ปีการศึกษา {courseYear}</h4>
-                        <p>เลือกรายวิชาเพิ่มเติมที่คุณสนใจลงทะเบียนเรียน</p>
+                        <h4>รายวิชาเพิ่มเติมปีการศึกษา {courseYear}</h4>
                         <label htmlFor="grade-filter">กรองรายวิชาโดยชั้นเรียน:</label>
                         <select id="grade-filter" className="form-control" defaultValue="all" onChange={this.handleChangeFilter}>
                             <option value="all">ทั้งหมด</option>
@@ -206,8 +150,6 @@ class Dashboard extends React.Component {
                 </div>
             )
         }
-
-
     }
 }
 
