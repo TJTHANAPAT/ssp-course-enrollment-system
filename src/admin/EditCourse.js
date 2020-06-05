@@ -78,11 +78,11 @@ class EditCourse extends React.Component {
             courseCapacity: parseInt(courseCapacity),
         }
         if (courseGrade.length !== 0 && courseDay.length !== 0) {
-            this.setState({ isLoadingComplete: false });
+            this.setState({ isLoading: true });
             updateCourse(courseYear, courseData)
                 .then(() => {
                     this.setState({
-                        isLoadingComplete: true
+                        isLoading: false
                     });
                     this.setCheckBoxGrade();
                     alert(`บันทึกข้อมูลการแก้ไขรายวิชา ${courseID} ${courseName} สำเร็จ`);
@@ -90,7 +90,7 @@ class EditCourse extends React.Component {
                 .catch(err => {
                     console.error(err);
                     this.setState({
-                        isLoadingComplete: true,
+                        isLoading: false,
                         isError: true,
                         errorMessage: err
                     })
@@ -102,13 +102,15 @@ class EditCourse extends React.Component {
     UpdateCourseForm = () => {
         return (
             <form onSubmit={this.updateCourse}>
-                <div className="form-group">
-                    <label htmlFor="courseID">รหัสวิชา</label>
-                    <input type="text" className="form-control" id="รหัสวิชา" placeholder="รหัสวิชา" onChange={this.updateInput} value={this.state.courseID} required disabled />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="courseName">ชื่อรายวิชา</label>
-                    <input type="text" className="form-control" id="courseName" placeholder="ชื่อรายวิชา" onChange={this.updateInput} value={this.state.courseName} required />
+                <div className="form-row">
+                    <div className="form-group col-sm-3">
+                        <label htmlFor="courseID">รหัสวิชา</label>
+                        <input type="text" className="form-control" id="รหัสวิชา" placeholder="รหัสวิชา" onChange={this.updateInput} value={this.state.courseID} required disabled />
+                    </div>
+                    <div className="form-group col-sm-9">
+                        <label htmlFor="courseName">ชื่อรายวิชา</label>
+                        <input type="text" className="form-control" id="courseName" placeholder="ชื่อรายวิชา" onChange={this.updateInput} value={this.state.courseName} required />
+                    </div>
                 </div>
                 <div className="form-group">
                     <label htmlFor="courseTeacher">ชื่อผู้สอน</label>
@@ -199,61 +201,6 @@ class EditCourse extends React.Component {
         }
     }
 
-    handleChangeCourseDay = (event) => {
-        const courseDayArr = this.state.courseDay
-        if (event.target.checked) {
-            console.log(`Checked Day ${event.target.value}`)
-            courseDayArr.push(event.target.value)
-            let courseDayArrSorted = this.sortCourseDayArr(courseDayArr);
-            this.setState({ courseDay: courseDayArrSorted })
-            console.log('Current Course Day: ', courseDayArrSorted);
-        } else {
-            console.log(`Unchecked Day ${event.target.value}`)
-            for (var i = 0; i < courseDayArr.length; i++) {
-                if (courseDayArr[i] === event.target.value) {
-                    courseDayArr.splice(i, 1);
-                }
-            }
-            this.setState({ courseDay: courseDayArr })
-            console.log('Current Course Day: ', this.state.courseDay);
-        }
-    }
-
-    sortCourseDayArr = (courseDayArr) => {
-        const daysArr = [
-            'sunday',
-            'monday',
-            'tuesday',
-            'wednesday',
-            'thursday',
-            'friday',
-            'saturday'
-        ]
-        let courseDayArrSorted = []
-        for (let i = 0; i < daysArr.length; i++) {
-            for (let j = 0; j < courseDayArr.length; j++) {
-                if (daysArr[i] === courseDayArr[j]) {
-                    courseDayArrSorted.push(courseDayArr[j])
-                }
-            }
-        }
-        return courseDayArrSorted
-    }
-
-    uncheckAllDay = (event) => {
-        event.preventDefault();
-        console.log(this.state.courseDay)
-        let checkboxes = document.getElementsByName('courseDayCheckBox')
-        for (let i = 0; i < checkboxes.length; i++) {
-            const checkbox = checkboxes[i];
-            checkbox.checked = false;
-        }
-        const courseDay = [];
-        this.setState({ courseDay: courseDay });
-        console.log('Uncheck All');
-        console.log('Current Course Grade: ', courseDay);
-    }
-
     daySelector = () => {
         const daysArr = [
             { en: 'sunday', th: 'วันอาทิตย์' },
@@ -275,7 +222,6 @@ class EditCourse extends React.Component {
         );
     }
 
-
     // Functions for deleting course data.
     deleteCourse = async (event) => {
         try {
@@ -295,7 +241,6 @@ class EditCourse extends React.Component {
                     throw err;
                 }
             }
-
         }
         catch (err) {
             console.error(err);
