@@ -4,6 +4,22 @@ import Footer from '../components/Footer';
 
 class CoursesSelector extends React.Component {
 
+    state = {
+        studentEnrollPlan: this.props.studentEnrollPlan
+    }
+
+    componentDidMount = (event) => {
+        if (this.props.studentEnrollPlan !== undefined) {
+            let checkboxes = document.getElementsByName('enrollPlans')
+            for (let i = 0; i < checkboxes.length; i++) {
+                const checkbox = checkboxes[i];
+                if(checkbox.value === this.props.studentEnrollPlan) {
+                    checkbox.checked = true;
+                }
+            }
+        }
+    }
+
     goPreviousStep = (event) => {
         event.preventDefault();
         this.props.goPreviousStepFunction();
@@ -11,7 +27,6 @@ class CoursesSelector extends React.Component {
 
     goNextStep = (event) => {
         event.preventDefault();
-        console.log('going next...');
         this.props.goNextStepFunction(this.state.studentEnrollPlan);
     }
 

@@ -60,7 +60,6 @@ class Enrollment extends React.Component {
             studentEnrollPlan: studentEnrollPlan,
             isAllowSelectCourses: true
         })
-        console.log('studentEnrollPlan ', studentEnrollPlan)
     }
     completeEnrollment = (studentData) => {
         this.setState({
@@ -108,6 +107,7 @@ class Enrollment extends React.Component {
                 <EnrollPlanSelector
                     courseYear={courseYear}
                     enrollPlans={this.state.courseYearConfig.enrollPlans}
+                    studentEnrollPlan={this.state.studentEnrollPlan}
                     goNextStepFunction={this.goSelectCourses}
                     goPreviousStepFunction={this.goBackStudentInfoForm}
                 />

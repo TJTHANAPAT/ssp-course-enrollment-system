@@ -48,7 +48,6 @@ class StudentInfoEnrollForm extends React.Component {
 
     goNextStep = (event) => {
         event.preventDefault();
-        console.log('Going next step...')
         const {
             studentID,
             nameTitle,
