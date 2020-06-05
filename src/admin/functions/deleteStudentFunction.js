@@ -69,7 +69,7 @@ export function deleteStudentData(studentID, courseYear) {
             })
             .catch(err => {
                 const errorMessage = `Failed deleting student ${studentID} in course year ${courseYear}. ${err.message}`;
-                reject(err);
+                reject(errorMessage);
             })
     })
 }

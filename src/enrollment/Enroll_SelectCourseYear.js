@@ -1,15 +1,15 @@
 import React from 'react';
-import * as system from './functions/systemFunctions';
-import LoadingPage from './components/LoadingPage';
-import ErrorPage from './components/ErrorPage';
-import Footer from './components/Footer';
+import * as system from '../functions/systemFunctions';
+import LoadingPage from '../components/LoadingPage';
+import ErrorPage from '../components/ErrorPage';
+import Footer from '../components/Footer';
 
 class EnrollSelectCourseYear extends React.Component {
     state = {
         courseYearArr: [],
         isLoading: true
     }
-    async componentDidMount() {
+    componentDidMount = async () => {
         try {
             const getSystemConfig = await system.getSystemConfig();
             const systemConfig = await getSystemConfig.systemConfig;
@@ -63,7 +63,7 @@ class EnrollSelectCourseYear extends React.Component {
                         <select className="form-control mb-3" defaultValue={selectedCourseYear} onChange={this.selectCourseYear}>
                             {courseYearSelector}
                         </select>
-                        <a href={`/enroll/step2?courseYear=${selectedCourseYear}`} className="btn btn-purple">เลือก</a>
+                        <a href={`/enroll/enrollment?courseYear=${selectedCourseYear}`} className="btn btn-purple">เลือก</a>
                         <button onClick={this.goBack} className="btn btn-secondary ml-2">กลับ</button>
                     </div>
                     <Footer />

@@ -291,7 +291,7 @@ class EditCourse extends React.Component {
                     await deleteCourse(courseYear, courseID);
                     this.setState({ isDeleteCourseComplete: true });
                 } else {
-                    const err = 'คุณต้องลบข้อมูลของนักเรียนทุกคนในรายวิชานี้ทิ้งก่อนทำการลบรายวิชานี้';
+                    const err = 'ข้อมูลของนักเรียนทุกคนที่ทำการลงทะเบียนในรายวิชานี้ต้องถูกลบทิ้งก่อนทำการลบรายวิชานี้';
                     throw err;
                 }
             }

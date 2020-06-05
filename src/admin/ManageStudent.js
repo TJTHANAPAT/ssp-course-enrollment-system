@@ -379,7 +379,7 @@ class GetStudentData extends React.Component {
                     const day = daysArr[i];
                     if (studentEnrolledCourse[day].length > 0) {
                         for (const courseID of studentEnrolledCourse[day]) {
-                            await deleteStudent.updateCourseEnrolledIndividualCourse(courseID, courseYear)
+                            await deleteStudent.updateCourseEnrolledIndividualCourse(courseYear, courseID)
                         }
                     }
                 }

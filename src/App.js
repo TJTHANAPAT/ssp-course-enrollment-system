@@ -7,8 +7,8 @@ import {
 
 import Homepage from './Homepage';
 import Dashboard from './CourseDashboard';
-import EnrollSelectCourseYear from './Enroll_SelectCourseYear';
-import EnrollWithPlan from './Enroll_EnrollWithPlan';
+import EnrollSelectCourseYear from './enrollment/Enroll_SelectCourseYear';
+import Enrollment from './enrollment/Enroll_Enrollment';
 import SearchStudentData from './SearchStudentData';
 
 import Admin from './admin/Admin';
@@ -33,8 +33,8 @@ function App() {
         <Route path='/course'>
           <Dashboard />
         </Route>
-        <Route path='/enroll/step2'>
-          <EnrollWithPlan />
+        <Route path='/enroll/enrollment'>
+          <Enrollment />
         </Route>
         <Route path='/enroll'>
           <EnrollSelectCourseYear />

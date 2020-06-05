@@ -88,9 +88,7 @@ export function getCourseYearGrades(courseYear = '', courseYearsArr, rejectIfFir
             const err = `No course year ${courseYear} has been found in database.`;
             reject(err);
         }
-
     })
-
 }
 
 export function getCourseYearConfig(courseYear = '', courseYearsArr, rejectIfFirstInitConfig = true) {
