@@ -7,16 +7,10 @@ import ErrorPage from '../components/ErrorPage';
 import * as auth from '../functions/adminFunctions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
 
-class GradeConfig extends React.Component {
+class IndividualCourseYearConfig extends React.Component {
     state = {
-        isLoadingComplete: false,
-        isError: false,
-        errorMessage: '',
-
-        courseYear: '',
-        gradesArr: [],
+        isLoading: true,
         gradeAdd: '',
-        enrollPlans: [],
         newEnrollPlanName: '',
         newEnrollPlan: [
             { day: 'sunday', numOfCourse: 0 },
@@ -28,38 +22,29 @@ class GradeConfig extends React.Component {
             { day: 'saturday', numOfCourse: 0 }
         ]
     }
-    componentDidMount = () => {
-        auth.checkAuthState()
-            .then(() => {
-                return system.getURLParam('courseYear');
+    componentDidMount = async () => {
+        try {
+            await auth.checkAuthState()
+            const courseYear = await system.getURLParam('courseYear');
+            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, false);
+            const courseYearConfig = getCourseYearConfig.config;
+            this.setState({
+                courseYear: courseYear,
+                enrollPlans: courseYearConfig.enrollPlans,
+                gradesArr: courseYearConfig.grades,
+                isFirstInitConfig: courseYearConfig.isFirstInitConfig,
             })
-            .then(res => {
-                const courseYear = res;
-                this.setState({ courseYear: courseYear });
-                return system.getSystemConfig();
-            })
-            .then(res => {
-                const courseYearsArr = res.systemConfig.courseYears;
-                const { courseYear } = this.state;
-                return system.getCourseYearConfig(courseYear, courseYearsArr, false);
-            })
-            .then(res => {
-                console.log(res)
-                this.setState({
-                    enrollPlans: res.config.enrollPlans,
-                    gradesArr: res.config.grades,
-                    isFirstInitConfig: res.isFirstInitConfig,
-                    isLoadingComplete: true
-                })
-            })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
+            });
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
     goBack = (event) => {
@@ -77,10 +62,21 @@ class GradeConfig extends React.Component {
     addNewGrade = (event) => {
         event.preventDefault();
         const { gradeAdd, gradesArr } = this.state
-        gradesArr.push(parseInt(gradeAdd))
-        gradesArr.sort((a, b) => a - b)
-        this.setState({ gradesArr: gradesArr, gradeAdd: '' })
-        console.log(gradesArr)
+        const isArrContains = (array, item) => {
+            for (let i = 0; i < array.length; i++) {
+                if (array[i] === item) { return true }
+            }
+            return false
+        }
+        if (!isArrContains(gradesArr, parseInt(gradeAdd))) {
+            gradesArr.push(parseInt(gradeAdd))
+            gradesArr.sort((a, b) => a - b)
+            this.setState({ gradesArr: gradesArr, gradeAdd: '' })
+            console.log(gradesArr)
+        } else {
+            alert(`ระดับชั้น ${gradeAdd} ถูกเพิ่มไว้อยู่ก่อนแล้ว`)
+            this.setState({ gradeAdd: '' })
+        }
     }
 
     removeGrade = (event) => {
@@ -105,23 +101,26 @@ class GradeConfig extends React.Component {
         } = this.state
         const db = firebase.firestore();
         const configRef = db.collection(courseYear).doc('config')
+        const config = { grades: gradesArr, enrollPlans: enrollPlans }
         if (!isFirstInitConfig) {
-            configRef.update({ grades: gradesArr, enrollPlans: enrollPlans })
+            configRef.update(config)
                 .then(() => {
                     console.log('Update successfully!')
                     alert('บันทึกสำเร็จ')
                 })
                 .catch(err => {
                     console.error('Error: ', err)
+                    alert('บันทึกไม่สำเร็จ')
                 })
         } else {
-            configRef.set({ grades: gradesArr, enrollPlans: enrollPlans })
+            configRef.set(config)
                 .then(() => {
                     console.log('Update successfully!')
                     alert('บันทึกสำเร็จ')
                 })
                 .catch(err => {
                     console.error('Error: ', err)
+                    alert('บันทึกไม่สำเร็จ')
                 })
         }
 
@@ -367,9 +366,8 @@ class GradeConfig extends React.Component {
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
@@ -397,4 +395,4 @@ class GradeConfig extends React.Component {
     }
 }
 
-export default GradeConfig;
+export default IndividualCourseYearConfig;
