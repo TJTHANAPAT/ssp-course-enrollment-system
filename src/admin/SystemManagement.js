@@ -1,7 +1,6 @@
 import React from 'react';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
-import 'firebase/auth';
 import LoadingPage from '../components/LoadingPage';
 import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
@@ -12,66 +11,52 @@ import * as system from '../functions/systemFunctions';
 
 class SystemManagement extends React.Component {
     state = {
-        courses: [],
-
-        isLoadingComplete: false,
-        isError: false,
-        errorMessage: '',
-        isFirstInitSystem: false,
-
-        courseYearArr: [],
-        selectedCourseYear: ''
+        isLoading: true
     }
 
-    componentDidMount = () => {
-        auth.checkAuthState()
-            .then(res => {
-                // const user = res.user;
-                // const isLogin = res.isLogin;
-                this.setState({
-                    currentUser: res,
-                    isLogin: !!res,
-                })
-                return system.getSystemConfig(false)
-            })
-            .then(res => {
-                const isFirstInitSystem = res.isFirstInitSystem;
+    componentDidMount = async () => {
+        try {
+            const user = await auth.checkAuthState();
+            this.setState({
+                currentUser: user,
+                isLogin: !!user
+            });
+            if (!!user) {
+                const getSystemConfig = await system.getSystemConfig(false);
+                const isFirstInitSystem = getSystemConfig.isFirstInitSystem;
+                this.setState({ isFirstInitSystem: isFirstInitSystem });
                 if (!isFirstInitSystem) {
-                    const systemConfig = res.systemConfig;
+                    const systemConfig = getSystemConfig.systemConfig;
                     this.setState({
                         selectedCourseYear: systemConfig.currentCourseYear,
                         courseYearArr: systemConfig.courseYears
                     });
                     this.getCoursesData(systemConfig.currentCourseYear);
-                } else {
-                    this.setState({
-                        isFirstInitSystem: true,
-                    })
                 }
-                console.log(res);
+            }
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isLoading: false,
+                isError: true,
+                errorMessage: err
             })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
+        }
     }
 
     getCoursesData = (courseYear) => {
         const db = firebase.firestore();
         const courseRef = db.collection(courseYear).doc('course').collection('course');
-        let coursesArr = [];
+        this.setState({isLoading: true});
         courseRef.onSnapshot(querySnapshot => {
-            coursesArr = [];
+            let coursesArr = [];
             querySnapshot.forEach(doc => {
                 coursesArr.push(doc.data())
             })
             this.setState({
                 courses: coursesArr,
-                isLoadingComplete: true,
+                isLoading: false
             });
         });
     }
@@ -154,41 +139,41 @@ class SystemManagement extends React.Component {
     }
 
     signOut = () => {
-        this.setState({ isLoadingComplete: false });
+        this.setState({ isLoading: true });
         auth.signOut()
             .then(() => {
                 this.setState({
-                    isLoadingComplete: true,
+                    isLoading: false,
                     isLogin: false
-                })
+                });
             })
     }
 
     render() {
         const {
-            isLoadingComplete,
+            isLoading,
             isLogin,
             isFirstInitSystem,
             isError,
             errorMessage
         } = this.state;
 
-        if (!isLoadingComplete) {
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'none'} />
         } else if (isLogin) {
             if (isFirstInitSystem) {
                 return (
-                    <div className="body body-center bg-gradient">
-                        <div className="wrapper text-left">
+                    <div className="body bg-gradient">
+                        <div className="wrapper">
                             <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
                             <h2>โรงเรียนสตรีสมุทรปราการ</h2>
-                            <h2>System Configuration</h2>
-                            <p className="mt-2">No course year has been created. You have to create one by press the button below</p>
-                            <div className="mt-2 text-center">
-                                <a role="button" className="btn btn-purple m-1" href="/admin/system/configyear">Config Course Years</a>
-                                <button className="btn btn-green m-1" onClick={this.signOut}><i className="fa fa-sign-out"></i> Logout</button>
+                            <h5>เข้าใช้งานระบบในชื่อ {this.state.currentUser.displayName}</h5>
+                            <p className="mt-2">ดูเหมือนว่ายังไม่มีปีการศึกษาถูกเพิ่มในระบบ กดปุ่มด้านล่างเพื่อตั้งค่าปีการศึกษา</p>
+                            <div className="mt-2">
+                                <a role="button" className="btn btn-purple" href="/admin/system/configyear">ตั้งค่าปีการศึกษา</a>
+                                <button className="btn btn-green ml-2" onClick={this.signOut}><i className="fa fa-sign-out"></i> ลงชื่อออก</button>
                             </div>
                         </div>
                         <Footer />
@@ -201,7 +186,7 @@ class SystemManagement extends React.Component {
                         <div className="wrapper">
                             <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
                             <h2>โรงเรียนสตรีสมุทรปราการ</h2>
-                            <h5>เข้าใช้งานระบบในชื่อ {firebase.auth().currentUser.displayName}</h5>
+                            <h5>เข้าใช้งานระบบในชื่อ {this.state.currentUser.displayName}</h5>
                             <label htmlFor="courseyear-selector">เลือกปีการศึกษา:</label>
                             {this.courseYearSelector()}
                             {this.courseDashboard(courses)}
