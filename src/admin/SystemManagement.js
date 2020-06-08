@@ -103,7 +103,7 @@ class SystemManagement extends React.Component {
                     )
                 }
                 return (
-                    <div className="course row admin" key={i}>
+                    <div className="admin course-dashboard-item course row" key={i}>
                         <div className="col-md-9">
                             <div className="row align-items-center">
                                 <div className="detail col-sm-6">

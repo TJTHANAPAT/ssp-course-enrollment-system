@@ -64,7 +64,7 @@ class EnrollmentCompletePage extends React.Component {
             )
         })
         return (
-            <div className="body body-center bg-gradient">
+            <div className="body bg-gradient">
                 <div className="wrapper">
                     <div className="row align-items-center">
                         <div className="col-sm-3 text-center mb-3">

@@ -137,7 +137,7 @@ export function getCourseData(courseYear = '', courseID = '') {
                 if (doc.exists) {
                     resolve(doc.data());
                 } else {
-                    const err = `Course ${courseID} data in ${courseYear} has not been found in database.`
+                    const err = `Course ${courseID} data in course year ${courseYear} has not been found in database.`
                     reject(err);
                 }
             })

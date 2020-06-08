@@ -85,7 +85,7 @@ class EditCourse extends React.Component {
                         isLoading: false
                     });
                     this.setCheckBoxGrade();
-                    alert(`บันทึกข้อมูลการแก้ไขรายวิชา ${courseID} ${courseName} สำเร็จ`);
+                    alert(`บันทึกข้อมูลการแก้ไขรายวิชา ${courseID} ${courseName} ปีการศึกษา ${courseYear} สำเร็จ`);
                 })
                 .catch(err => {
                     console.error(err);

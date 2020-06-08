@@ -94,7 +94,7 @@ class Dashboard extends React.Component {
                     courseStatus = 'เต็ม'
                 }
                 return (
-                    <div className="course row align-items-center" key={i}>
+                    <div className="course-dashboard-item course row align-items-center" key={i}>
                         <div className="detail col-sm-6">
                             <span className="course-name">{course.courseID} {course.courseName}</span>
                             <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="true"></i> {course.courseTeacher}</span>

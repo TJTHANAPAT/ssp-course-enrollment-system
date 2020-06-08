@@ -72,7 +72,7 @@ class CoursesSelector extends React.Component {
                                     {checkBoxEnroll()}
                                 </div>
                                 <div className="enroll-selector-label">
-                                    <div className="course-selector row align-items-center">
+                                    <div className="course-selector-item course row align-items-center">
                                         <div className="detail col-sm-6">
                                             <span className="course-name">{course.courseID} {course.courseName}</span>
                                             <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="true"></i> {course.courseTeacher}</span>

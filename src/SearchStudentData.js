@@ -279,7 +279,7 @@ class SearchStudentData extends React.Component {
                 return <option value={courseYear.year} key={i}>ปีการศึกษา {courseYear.year}</option>
             });
             return (
-                <div className="body body-center bg-gradient">
+                <div className="body bg-gradient">
                     <div className="wrapper text-left">
                         <h1>ค้นหาข้อมูลนักเรียน</h1>
                         <p>เลือกปีการศึกษาและกรอกเลขประจำตัวนักเรียนเพื่อดูข้อมูล</p>

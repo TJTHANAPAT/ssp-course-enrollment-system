@@ -83,8 +83,8 @@ class Register extends React.Component {
                             <h1>ยินดีต้อนรับ</h1>
                             <p>ยินดีต้อนรับ {firebase.auth().currentUser.displayName}!</p>
                             <div>
-                                <a className="btn btn-purple m-1" href="/admin">การจัดการระบบ</a>
-                                <button className="btn btn-green m-1" onClick={() => firebase.auth().signOut()}>ลงชื่อออก</button>
+                                <a className="btn btn-purple" href="/admin">การจัดการระบบ</a>
+                                <button className="btn btn-green ml-2" onClick={() => firebase.auth().signOut()}>ลงชื่อออก</button>
                             </div>
                         </div>
                         <Footer />
