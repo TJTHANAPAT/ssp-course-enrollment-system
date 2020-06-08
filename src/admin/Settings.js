@@ -13,36 +13,33 @@ import * as system from '../functions/systemFunctions';
 class Settings extends React.Component {
 
     state = {
-        isLoadingComplete: false,
-        isError: false,
-        errorMessage: '',
-        isRegisterEnabled: false
+        isLoading: true
     }
 
-    componentDidMount = () => {
-        auth.checkAuthState()
-            .then(() => {
-                return system.getSystemConfig();
+    componentDidMount = async () => {
+        try {
+            await auth.checkAuthState();
+            const getSystemConfig = await system.getSystemConfig();
+            const systemConfig = getSystemConfig.systemConfig;
+            this.setState({
+                isRegisterEnabled: systemConfig.isRegisterEnabled,
+                isSearchEnabled: systemConfig.isSearchEnabled,
             })
-            .then(res => {
-                const systemConfig = res.systemConfig;
-                this.setState({
-                    isRegisterEnabled: systemConfig.isRegisterEnabled,
-                    isSearchEnabled: systemConfig.isSearchEnabled,
-                    isLoadingComplete: true
-                })
+        }
+        catch (err) {
+            console.error(err);
+            this.setState({
+                isError: true,
+                errorMessage: err
             })
-            .catch(err => {
-                console.error(err);
-                this.setState({
-                    isLoadingComplete: true,
-                    isError: true,
-                    errorMessage: err
-                })
-            })
+        }
+        finally {
+            this.setState({ isLoading: false });
+        }
     }
 
-    goBack = () => {
+    goBack = (event) => {
+        event.preventDefault();
         window.history.back();
     }
 
@@ -68,19 +65,17 @@ class Settings extends React.Component {
             })
             .catch(err => {
                 console.error('Error: ', err)
-                alert('การบันทึกล้มเหลว')
+                alert('บันทึกไม่สำเร็จ')
             })
     }
 
     render() {
-        const { isLoadingComplete, isError, errorMessage } = this.state;
-
-        if (!isLoadingComplete) {
+        const { isLoading, isError, errorMessage } = this.state;
+        if (isLoading) {
             return <LoadingPage />
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
         } else {
-            const { isRegisterEnabled, isSearchEnabled } = this.state;
             return (
                 <div className="body bg-gradient">
                     <div className="wrapper text-left">
@@ -94,7 +89,7 @@ class Settings extends React.Component {
                                     <Switch
                                         id={'isRegisterEnabled'}
                                         onChange={this.handleChangeEnableBtn}
-                                        checked={isRegisterEnabled}
+                                        checked={this.state.isRegisterEnabled}
                                     />
                                 </div>
                             </li>
@@ -106,7 +101,7 @@ class Settings extends React.Component {
                                     <Switch
                                         id={'isSearchEnabled'}
                                         onChange={this.handleChangeEnableBtn}
-                                        checked={isSearchEnabled}
+                                        checked={this.state.isSearchEnabled}
                                     />
                                 </div>
                             </li>
