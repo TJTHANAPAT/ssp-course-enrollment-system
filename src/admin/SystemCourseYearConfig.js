@@ -64,7 +64,7 @@ class SystemCourseYearConfig extends React.Component {
         const { courseYearAdd, courseYearsArr } = this.state
         if (courseYearAdd.includes('/')) {
             alert(`Course year must not contain slash ( / ).`)
-        } else if (!system.checkCourseYearExist(courseYearAdd, courseYearsArr)) {
+        } else if (!system.isCourseYearExist(courseYearAdd, courseYearsArr)) {
             const newCourseYear = {
                 year: courseYearAdd.toString(),
                 available: false,

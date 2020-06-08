@@ -21,7 +21,7 @@ class Enrollment extends React.Component {
             const systemConfig = getSystemConfig.systemConfig;
             const courseYearsArr = systemConfig.courseYears;
             await enroll.checkCourseYearAvailable(courseYear, systemConfig);
-            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, courseYearsArr);
+            const getCourseYearConfig = await system.getCourseYearConfigForEnrollment(courseYear, courseYearsArr);
             const courseYearConfig = getCourseYearConfig.config;
             const coursesData = await enroll.getCoursesData(courseYear);
             this.setState({

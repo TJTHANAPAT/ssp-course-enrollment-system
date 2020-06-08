@@ -24,7 +24,7 @@ class GetStudentData extends React.Component {
             await auth.checkAuthState();
             const selectedCourseYear = await system.getURLParam('courseYear');
             const getSystemConfig = await system.getSystemConfig();
-            const systemConfig = await getSystemConfig.systemConfig;
+            const systemConfig = getSystemConfig.systemConfig;
             const courseYearArr = systemConfig.courseYears;
             this.setState({
                 selectedCourseYear: selectedCourseYear,

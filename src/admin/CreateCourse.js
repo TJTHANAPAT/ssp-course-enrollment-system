@@ -18,15 +18,10 @@ class CreateCourse extends React.Component {
         try {
             await auth.checkAuthState()
             const courseYear = await system.getURLParam('courseYear');
-            const getSystemConfig = await system.getSystemConfig();
-            const systemConfig = getSystemConfig.systemConfig;
-            const courseYearsArr = systemConfig.courseYears;
-            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, courseYearsArr);
-            const courseYearConfig = getCourseYearConfig.config;
+            const getCourseYearConfig = await system.getCourseYearConfig(courseYear);
             this.setState({
                 courseYear: courseYear,
-                courseYearConfig: courseYearConfig,
-                gradesArr: courseYearConfig.grades
+                gradesArr: getCourseYearConfig.config.grades
             })
         }
         catch (err) {

@@ -18,12 +18,10 @@ class EditCourse extends React.Component {
             const courseYear = await system.getURLParam('courseYear');
             const courseID = await system.getURLParam('courseID');
             const course = await system.getCourseData(courseYear, courseID);
-            const getSystemConfig = await system.getSystemConfig();
-            const courseYearsArr = getSystemConfig.systemConfig.courseYears;
-            const getCourseYearGrades = await system.getCourseYearGrades(courseYear, courseYearsArr);
+            const getCourseYearConfig = await system.getCourseYearConfig(courseYear, false);
             this.setState({
                 courseYear: courseYear,
-                gradesArr: getCourseYearGrades.grades,
+                gradesArr: getCourseYearConfig.config.grades,
 
                 courseName: course.courseName,
                 courseID: course.courseID,
