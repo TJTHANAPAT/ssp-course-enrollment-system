@@ -85,13 +85,13 @@ class ViewCourse extends React.Component {
         let studentsArrFormated = [];
         studentsArr.map(student => {
             let studentDataFormated = {
-                StudentID: student.studentID,
-                Title: student.nameTitle,
-                FirstName: student.nameFirst,
-                LastName: student.nameLast,
-                Grade: student.studentGrade,
-                Class: student.studentClass,
-                Roll: student.studentRoll
+                เลขประจำตัว: student.studentID,
+                คำนำหน้า: student.nameTitle,
+                ชื่อ: student.nameFirst,
+                นามสกุล: student.nameLast,
+                ชั้น: student.studentGrade,
+                ห้อง: student.studentClass,
+                เลขที่: student.studentRoll
             }
             studentsArrFormated.push(studentDataFormated);
             return null;
