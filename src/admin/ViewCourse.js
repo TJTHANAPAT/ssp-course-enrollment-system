@@ -60,7 +60,7 @@ class ViewCourse extends React.Component {
         console.log(csv);
         var exportedFilenmae = fileTitle + '.csv' || 'export.csv';
 
-        var blob = new Blob([csv], { type: 'text/csv;charset=windows-874;' });
+        var blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
         if (navigator.msSaveBlob) { // IE 10+
             navigator.msSaveBlob(blob, exportedFilenmae);
         } else {
