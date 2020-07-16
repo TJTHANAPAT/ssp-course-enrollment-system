@@ -109,7 +109,23 @@ class ViewCourse extends React.Component {
                     querySnapshot.forEach(function (doc) {
                         studentsArr.push(doc.data());
                     });
-                    resolve(studentsArr);
+                    let studentTimestamp = [];
+                    studentsArr.forEach(student => {
+                        studentTimestamp.push(student.timestamp.seconds);
+                    })
+                    studentTimestamp.sort((a, b) => a - b)
+                    let studentsArrOrderByTimestamp = [];
+                    for (let i = 0; i < studentTimestamp.length; i++) {
+                        const timestamp = studentTimestamp[i];
+                        for (let j = 0; j < studentsArr.length; j++) {
+                            const student = studentsArr[j];
+                            if (timestamp === student.timestamp.seconds) {
+                                studentsArrOrderByTimestamp.push(student)
+                                studentsArr.splice(j, 1);
+                            }
+                        }
+                    }
+                    resolve(studentsArrOrderByTimestamp);
                 })
                 .catch(err => {
                     console.error(err);
@@ -127,12 +143,14 @@ class ViewCourse extends React.Component {
             let studentsList = studentsArr.map((student, i) => {
                 return (
                     <tr key={i}>
+                        <td>{i + 1}</td>
                         <td>{student.studentID}</td>
                         <td>{student.nameTitle}</td>
                         <td>{student.nameFirst}</td>
                         <td>{student.nameLast}</td>
                         <td>{student.studentGrade} / {student.studentClass}</td>
                         <td>{student.studentRoll}</td>
+                        <td>{new Date(student.timestamp.seconds * 1000).toLocaleString()}</td>
                     </tr>
                 )
             })
@@ -141,18 +159,21 @@ class ViewCourse extends React.Component {
                     <table className="table table-hover table-responsive-md">
                         <thead>
                             <tr>
+                                <th scope="col-1">#</th>
                                 <th scope="col-1">เลขประจำตัว</th>
                                 <th scope="col-1">คำนำหน้า</th>
                                 <th scope="col-4">ชื่อ</th>
                                 <th scope="col-4">นามสกุล</th>
                                 <th scope="col-1">ชั้น/ห้อง</th>
                                 <th scope="col-1">เลขที่</th>
+                                <th scope="col-1">timestamp</th>
                             </tr>
                         </thead>
                         <tbody>
                             {studentsList}
                         </tbody>
                     </table>
+                    <p><i>หมายเหตุ: รายชื่อเรียงตามเวลาที่ทำการลงทะเบียน</i></p>
                     <button className="btn btn-purple" onClick={this.exportStudentList}><i className="fa fa-download fa-fw"></i> ส่งออกเป็นไฟล์ CSV</button>
                 </div>
 
