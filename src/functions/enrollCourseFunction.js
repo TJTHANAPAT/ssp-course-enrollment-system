@@ -43,9 +43,14 @@ const getCourseStudentsData = (courseYear, courseID, courseDay) => {
 }
 
 export function checkCourseAvailable(courseYear = '', courseData = {}) {
-    const { courseID, courseCapacity, courseEnrolled } = courseData;
+    const {
+        courseID,
+        courseCapacity,
+        courseEnrolled,
+        courseDay 
+    } = courseData;
     return new Promise((resolve, reject) => {
-        getCourseStudentsData
+        getCourseStudentsData(courseYear, courseID, courseDay)
             .then(studentsArr => {
                 if (courseEnrolled < courseCapacity) {
                     if (studentsArr.length == courseEnrolled) {
