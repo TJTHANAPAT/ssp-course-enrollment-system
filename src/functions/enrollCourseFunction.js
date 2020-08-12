@@ -47,19 +47,22 @@ export function checkCourseAvailable(courseYear = '', courseData = {}) {
         courseID,
         courseCapacity,
         courseEnrolled,
-        courseDay 
+        courseDay
     } = courseData;
     return new Promise((resolve, reject) => {
         getCourseStudentsData(courseYear, courseID, courseDay)
             .then(studentsArr => {
+                console.log('studentsArr.length ', studentsArr.length)
+                console.log('courseEnrolled', courseEnrolled)
                 if (courseEnrolled < courseCapacity) {
                     if (studentsArr.length == courseEnrolled) {
                         resolve();
                     } else {
                         const db = firebase.firestore();
                         const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID);
-                        courseRef.update({ courseEnrolled: courseEnrolled })
+                        courseRef.update({ courseEnrolled: studentsArr.length })
                             .then(() => {
+                                console.log(`Number of student enrolling in course ${courseID} of course year ${courseYear} overlaps the number in course document.`)
                                 resolve();
                             })
                             .catch(err => {
