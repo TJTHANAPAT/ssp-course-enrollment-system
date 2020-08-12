@@ -22,15 +22,55 @@ export function checkCourseYearAvailable(courseYear = '', systemConfig = {}) {
     })
 }
 
+const getCourseStudentsData = (courseYear, courseID, courseDay) => {
+    const db = firebase.firestore();
+    const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
+    return new Promise((resolve, reject) => {
+        studentRef.get()
+            .then(querySnapshot => {
+                let studentsArr = [];
+                querySnapshot.forEach(function (doc) {
+                    studentsArr.push(doc.data());
+                });
+                resolve(studentsArr);
+            })
+            .catch(err => {
+                console.error(err);
+                const errorMessage = `Firebase failed getting student data of course ${courseID} in ${courseYear}. (${err.errorMessage})`
+                reject(errorMessage)
+            })
+    })
+}
+
 export function checkCourseAvailable(courseYear = '', courseData = {}) {
     const { courseID, courseCapacity, courseEnrolled } = courseData;
     return new Promise((resolve, reject) => {
-        if (courseEnrolled < courseCapacity) {
-            resolve();
-        } else {
-            const err = `รายวิชาเพิ่มเติม ${courseID} ปีการศึกษา ${courseYear} เต็ม`
-            reject(err);
-        }
+        getCourseStudentsData
+            .then(studentsArr => {
+                if (courseEnrolled < courseCapacity) {
+                    if (studentsArr.length == courseEnrolled) {
+                        resolve();
+                    } else {
+                        const db = firebase.firestore();
+                        const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID);
+                        courseRef.update({ courseEnrolled: courseEnrolled })
+                            .then(() => {
+                                resolve();
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                const errorMessage = `System failed updating course enrolled student. ${err.message}`;
+                                reject(errorMessage);
+                            })
+                    }
+                } else {
+                    const err = `รายวิชาเพิ่มเติม ${courseID} ปีการศึกษา ${courseYear} เต็ม`
+                    reject(err);
+                }
+            })
+            .catch(err => {
+                reject(err);
+            })
     })
 }
 
@@ -58,7 +98,7 @@ export function getCoursesData(courseYear = '') {
     })
 }
 
-export function getCourseData (courseYear = '', courseID = '') {
+export function getCourseData(courseYear = '', courseID = '') {
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)
     return new Promise((resolve, reject) => {
@@ -112,37 +152,6 @@ const arraysEqual = (arr1, arr2) => {
     return true;
 }
 
-const validateCourse = (courseYear, courseID) => {
-    return new Promise((resolve, reject) => {
-        let courseData = null;
-        let courseValidateData = null;
-        getCourseData(courseYear, courseID)
-            .then(res => {
-                courseData = res;
-                return checkCourseAvailable(courseYear, courseData);
-            })
-            .then(() => {
-                return getCourseValidateData(courseYear, courseID);
-            })
-            .then(res => {
-                courseValidateData = res;
-                const validateCourseCapacity = courseData.courseCapacity === courseValidateData.courseCapacity;
-                const validateCourseGrade = arraysEqual(courseData.courseGrade, courseValidateData.courseGrade);
-                console.log('Validate capacity ', validateCourseCapacity);
-                console.log('Validate grade ', validateCourseGrade);
-                if (validateCourseCapacity && validateCourseGrade) {
-                    resolve(courseData);
-                } else {
-                    const err = `Technical issue has been found in the system. The data of course ${courseID} in course year ${courseYear} is not valid. Please contact admin for more infomation.`;
-                    reject(err);
-                }
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-}
-
 const checkStudentGrade = (studentData, courseYear, courseData) => {
     const { studentGrade } = studentData;
     const { courseID, courseName, courseGrade } = courseData;
@@ -185,7 +194,7 @@ export function checkStudentID(courseYear, studentID) {
     })
 }
 
-export function updateCourseEnrolled (courseYear, courseData) {
+export function updateCourseEnrolled(courseYear, courseData) {
     const course = courseData;
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(course.courseID);
@@ -199,52 +208,6 @@ export function updateCourseEnrolled (courseYear, courseData) {
                 console.error(err);
                 const errorMessage = `System failed updating course enrolled student. ${err.message}`;
                 reject(errorMessage);
-            })
-    })
-}
-
-const addStudentData = (courseYear, courseData, studentData) => {
-    const { studentID } = studentData;
-    const db = firebase.firestore();
-    const studentRef = db.collection(courseYear).doc('student').collection('student').doc(studentID);
-    return new Promise((resolve, reject) => {
-        studentRef.set(studentData)
-            .then(() => {
-                return updateCourseEnrolled(courseYear, courseData);
-            })
-            .then(() => {
-                resolve();
-            })
-            .catch(err => {
-                console.error(err);
-                const errorMessage = `System failed adding student data. ${err.message}`;
-                reject(errorMessage);
-            })
-    })
-}
-
-export function enrollCourse(courseYear, courseID, studentData) {
-    return new Promise((resolve, reject) => {
-        const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-        studentData = { ...studentData, ...{ timestamp: timestamp } };
-        let courseData = null
-        validateCourse(courseYear, courseID)
-            .then(res => {
-                courseData = res;
-                return checkStudentGrade(studentData, courseYear, courseData);
-            })
-            .then(() => {
-                const studentID = studentData.studentID;
-                return checkStudentID(courseYear, studentID);
-            })
-            .then(() => {
-                return addStudentData(courseYear, courseData, studentData);
-            })
-            .then(() => {
-                resolve();
-            })
-            .catch(err => {
-                reject(err);
             })
     })
 }
@@ -286,7 +249,7 @@ export function addStudentDataNew(courseYear, studentData) {
     })
 }
 
-export function validateIndividualCourse (courseYear = '', courseID = '', studentData = { studentID: '' }){
+export function validateIndividualCourse(courseYear = '', courseID = '', studentData = { studentID: '' }) {
     return new Promise((resolve, reject) => {
         let courseData;
         let courseValidateData;
@@ -305,12 +268,12 @@ export function validateIndividualCourse (courseYear = '', courseID = '', studen
                 courseValidateData = res;
                 return validateCourseData(courseYear, courseData, courseValidateData);
             })
-            .then(()=> {
+            .then(() => {
                 resolve();
                 console.log('ValidateIndividualCourse is successful.')
             })
             .catch(err => {
-                console.error('ValidateIndividualCourse error: ',err);
+                console.error('ValidateIndividualCourse error: ', err);
                 reject(err);
             })
     })
@@ -318,7 +281,7 @@ export function validateIndividualCourse (courseYear = '', courseID = '', studen
 
 const validateCourseData = (courseYear, courseData, courseValidateData) => {
     return new Promise((resolve, reject) => {
-        const {courseID} = courseData;
+        const { courseID } = courseData;
         const validateCourseCapacity = courseData.courseCapacity === courseValidateData.courseCapacity;
         if (validateCourseCapacity) {
             resolve();
@@ -326,41 +289,5 @@ const validateCourseData = (courseYear, courseData, courseValidateData) => {
             const err = `Technical issue has been found in the system. The data of course ${courseID} in course year ${courseYear} is not valid. Please contact admin for more infomation.`;
             reject(err);
         }
-    })
-}
-
-export function updateCourseEnrolledIndividualCourseForDeleteStudent(courseYear, courseID) {
-    return new Promise((resolve, reject) => {
-        let courseData;
-        getCourseData(courseYear, courseID)
-            .then(res => {
-                courseData = res;
-                return updateCourseEnrolledForDeleteStudent(courseYear, courseData);
-            })
-            .then(() => {
-                console.log(`Enroll in a course ${courseID} in course year ${courseYear} successfully.`)
-                resolve();
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-}
-
-export function updateCourseEnrolledForDeleteStudent (courseYear, courseData) {
-    const course = courseData;
-    const db = firebase.firestore();
-    const courseRef = db.collection(courseYear).doc('course').collection('course').doc(course.courseID);
-    return new Promise((resolve, reject) => {
-        const updateCourseEnrolled = course.courseEnrolled - 1;
-        courseRef.update({ courseEnrolled: updateCourseEnrolled })
-            .then(() => {
-                resolve();
-            })
-            .catch(err => {
-                console.error(err);
-                const errorMessage = `System failed updating course enrolled student. ${err.message}`;
-                reject(errorMessage);
-            })
     })
 }
