@@ -19,7 +19,6 @@ class ViewCourse extends React.Component {
             const courseYear = await system.getURLParam('courseYear');
             const courseID = await system.getURLParam('courseID');
             const course = await system.getCourseData(courseYear, courseID);
-            const studentsArr = await this.getCourseStudentsData(courseYear, courseID, course.courseDay);
             this.setState({
                 courseYear: courseYear,
                 courseName: course.courseName,
@@ -28,8 +27,8 @@ class ViewCourse extends React.Component {
                 courseTeacher: course.courseTeacher,
                 courseGrade: course.courseGrade,
                 courseDay: course.courseDay,
-                studentsArr: studentsArr
             })
+            this.getCourseStudentsData(courseYear, courseID, course.courseDay)
         }
         catch (err) {
             console.error(err);
@@ -37,9 +36,6 @@ class ViewCourse extends React.Component {
                 isError: true,
                 errorMessage: err
             });
-        }
-        finally {
-            this.setState({ isLoading: false });
         }
     }
 
@@ -102,36 +98,32 @@ class ViewCourse extends React.Component {
     getCourseStudentsData = (courseYear, courseID, courseDay) => {
         const db = firebase.firestore();
         const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
-        return new Promise((resolve, reject) => {
-            studentRef.get()
-                .then(querySnapshot => {
-                    let studentsArr = [];
-                    querySnapshot.forEach(function (doc) {
-                        studentsArr.push(doc.data());
-                    });
-                    let studentTimestamp = [];
-                    studentsArr.forEach(student => {
-                        studentTimestamp.push(student.timestamp.seconds);
-                    })
-                    studentTimestamp.sort((a, b) => a - b)
-                    let studentsArrOrderByTimestamp = [];
-                    for (let i = 0; i < studentTimestamp.length; i++) {
-                        const timestamp = studentTimestamp[i];
-                        for (let j = 0; j < studentsArr.length; j++) {
-                            const student = studentsArr[j];
-                            if (timestamp === student.timestamp.seconds) {
-                                studentsArrOrderByTimestamp.push(student)
-                                studentsArr.splice(j, 1);
-                            }
-                        }
+        this.setState({ isLoading: true });
+        studentRef.onSnapshot(querySnapshot => {
+            let studentsArr = [];
+            querySnapshot.forEach(function (doc) {
+                studentsArr.push(doc.data());
+            });
+            let studentTimestamp = [];
+            studentsArr.forEach(student => {
+                studentTimestamp.push(student.timestamp.seconds);
+            })
+            studentTimestamp.sort((a, b) => a - b)
+            let studentsArrOrderByTimestamp = [];
+            for (let i = 0; i < studentTimestamp.length; i++) {
+                const timestamp = studentTimestamp[i];
+                for (let j = 0; j < studentsArr.length; j++) {
+                    const student = studentsArr[j];
+                    if (timestamp === student.timestamp.seconds) {
+                        studentsArrOrderByTimestamp.push(student)
+                        studentsArr.splice(j, 1);
                     }
-                    resolve(studentsArrOrderByTimestamp);
-                })
-                .catch(err => {
-                    console.error(err);
-                    const errorMessage = `Firebase failed getting student data of course ${courseID} in ${courseYear}. (${err.errorMessage})`
-                    reject(errorMessage)
-                })
+                }
+            }
+            this.setState({
+                studentsArr: studentsArrOrderByTimestamp,
+                isLoading: false
+            });
         })
     }
 
