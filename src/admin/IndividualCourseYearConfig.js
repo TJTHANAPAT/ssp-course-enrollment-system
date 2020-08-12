@@ -32,7 +32,7 @@ class IndividualCourseYearConfig extends React.Component {
                 courseYear: courseYear,
                 enrollPlans: courseYearConfig.enrollPlans,
                 gradesArr: courseYearConfig.grades,
-                isFirstInitConfig: courseYearConfig.isFirstInitConfig,
+                isFirstInitConfig: getCourseYearConfig.isFirstInitConfig,
             })
         }
         catch (err) {
