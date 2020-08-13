@@ -299,11 +299,20 @@ class CoursesSelector extends React.Component {
                 enrolledCourse: studentEnrolledCourse
             }
             await enroll.checkStudentID(courseYear, studentID);
+            const timeout = (ms) => {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            let waitTime = Math.random() * 5000
+            console.log(`Wait for ${waitTime / 1000} seconds.`)
+            await timeout(waitTime)
+            console.log('Waiting done')
             for (let i = 0; i < daysArr.length; i++) {
                 const day = daysArr[i];
                 if (studentEnrolledCourse[day].length > 0) {
                     for (const courseID of studentEnrolledCourse[day]) {
+
                         await enroll.validateIndividualCourse(courseYear, courseID, studentData);
+
                     }
                 }
             }
@@ -316,8 +325,9 @@ class CoursesSelector extends React.Component {
                 }
             }
             await enroll.addStudentDataNew(courseYear, studentData);
-            console.log(`Enrollment of student with ID ${studentID} has benn completed!`);
+            console.log(`Enrollment of student with ID ${studentID} has been completed!`);
             this.props.goNextStepFunction(studentData);
+
         } catch (err) {
             console.error(err);
             this.setState({

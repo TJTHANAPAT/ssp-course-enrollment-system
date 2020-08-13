@@ -52,10 +52,8 @@ export function checkCourseAvailable(courseYear = '', courseData = {}) {
     return new Promise((resolve, reject) => {
         getCourseStudentsData(courseYear, courseID, courseDay)
             .then(studentsArr => {
-                console.log('studentsArr.length ', studentsArr.length)
-                console.log('courseEnrolled', courseEnrolled)
                 if (courseEnrolled < courseCapacity) {
-                    if (studentsArr.length == courseEnrolled) {
+                    if (studentsArr.length === courseEnrolled) {
                         resolve();
                     } else {
                         const db = firebase.firestore();
