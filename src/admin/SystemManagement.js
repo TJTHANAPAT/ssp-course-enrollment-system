@@ -22,6 +22,7 @@ class SystemManagement extends React.Component {
                 isLogin: !!user
             });
             if (!!user) {
+                console.log('Elective Course Enrollment © 2020 Created by TJTHANAPAT')
                 const getSystemConfig = await system.getSystemConfig(false);
                 const isFirstInitSystem = getSystemConfig.isFirstInitSystem;
                 this.setState({ isFirstInitSystem: isFirstInitSystem });
