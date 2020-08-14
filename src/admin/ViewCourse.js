@@ -21,13 +21,9 @@ class ViewCourse extends React.Component {
             const course = await system.getCourseData(courseYear, courseID);
             this.setState({
                 courseYear: courseYear,
-                courseName: course.courseName,
-                courseID: course.courseID,
-                courseCapacity: course.courseCapacity,
-                courseTeacher: course.courseTeacher,
-                courseGrade: course.courseGrade,
-                courseDay: course.courseDay,
+                courseID: courseID,
             })
+            this.getCourseData(courseYear, courseID)
             this.getCourseStudentsData(courseYear, courseID, course.courseDay)
         }
         catch (err) {
@@ -95,6 +91,17 @@ class ViewCourse extends React.Component {
         this.exportCSVFile(studentsArrFormated, fileTitle);
     }
 
+    getCourseData = (courseYear, courseID) => {
+        const db = firebase.firestore();
+        const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID)
+        courseRef.onSnapshot(doc => {
+            this.setState({
+                courseData: doc.data()
+            })
+            console.log(doc.data())
+        })
+    }
+
     getCourseStudentsData = (courseYear, courseID, courseDay) => {
         const db = firebase.firestore();
         const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
@@ -125,6 +132,31 @@ class ViewCourse extends React.Component {
                 isLoading: false
             });
         })
+    }
+
+    courseStatus = () => {
+        const course = this.state.courseData
+        let stat = (text, number) => {
+            return (
+                <div className="col stat">
+                    <span className="stat-description">{text}</span>
+                    <span className="stat-number">{number}</span>
+                </div>
+            )
+        }
+        let courseStatus;
+        if (course.courseEnrolled < course.courseCapacity) {
+            courseStatus = course.courseCapacity - course.courseEnrolled
+        } else {
+            courseStatus = 'เต็ม'
+        }
+        return (
+            <div className="course row align-items-center mb-2">
+                {stat('รับสมัคร', course.courseCapacity)}
+                {stat('สมัครแล้ว', course.courseEnrolled)}
+                {stat('ที่ว่าง', courseStatus)}
+            </div>
+        )
     }
 
     studentsList = () => {
@@ -180,12 +212,13 @@ class ViewCourse extends React.Component {
         } else if (isError) {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
         } else {
-            const { courseID, courseName, courseYear } = this.state
+            const { courseID, courseData, courseYear } = this.state
             return (
                 <div className="body bg-gradient">
                     <div className="wrapper">
-                        <h1>{courseID} {courseName}</h1>
-                        <p>รายวิชาเพิ่มเติม {courseID} {courseName} ปีการศึกษา {courseYear}</p>
+                        <h1>{courseID} {courseData.courseName}</h1>
+                        <p>รายวิชาเพิ่มเติม {courseID} {courseData.courseName} ปีการศึกษา {courseYear}</p>
+                        {this.courseStatus()}
                         {this.studentsList()}
                         <button className="btn btn-wrapper-bottom btn-green" onClick={this.goBack}>ย้อนกลับ</button>
                     </div>
