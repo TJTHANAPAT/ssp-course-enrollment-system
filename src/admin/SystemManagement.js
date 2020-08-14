@@ -22,7 +22,7 @@ class SystemManagement extends React.Component {
                 isLogin: !!user
             });
             if (!!user) {
-                console.log('Elective Course Enrollment © 2020 Created by TJTHANAPAT')
+                console.log('Course Enrollment System © 2020 Created by TJTHANAPAT')
                 const getSystemConfig = await system.getSystemConfig(false);
                 const isFirstInitSystem = getSystemConfig.isFirstInitSystem;
                 this.setState({ isFirstInitSystem: isFirstInitSystem });
@@ -185,7 +185,7 @@ class SystemManagement extends React.Component {
                 return (
                     <div className="body bg-gradient">
                         <div className="wrapper">
-                            <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
+                            <h1>ระบบลงทะเบียนเรียน</h1>
                             <h2>โรงเรียนสตรีสมุทรปราการ</h2>
                             <h5>เข้าใช้งานระบบในชื่อ {this.state.currentUser.displayName}</h5>
                             <label htmlFor="courseyear-selector">เลือกปีการศึกษา:</label>

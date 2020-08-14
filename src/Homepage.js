@@ -6,7 +6,7 @@ class Homepage extends React.Component {
         return (
             <div className="body body-center bg-gradient text-white">
                 <div className="wrapper-no-bg-color">
-                    <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
+                    <h1>ระบบลงทะเบียนเรียน</h1>
                     <h4>โรงเรียนสตรีสมุทรปราการ</h4>
                     <div className="mt-3">
                         <a className="btn btn-landing m-2" href="/enroll">ลงทะเบียน</a>

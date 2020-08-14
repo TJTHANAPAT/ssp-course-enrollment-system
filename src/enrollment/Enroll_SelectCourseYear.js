@@ -57,7 +57,7 @@ class EnrollSelectCourseYear extends React.Component {
             return (
                 <div className="body bg-gradient">
                     <div className="wrapper text-left">
-                        <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
+                        <h1>ระบบลงทะเบียนเรียน</h1>
                         <h2>โรงเรียนสตรีสมุทรปราการ</h2>
                         <p>เลือกปีการศึกษาที่ต้องการลงทะเบียน</p>
                         <select className="form-control mb-3" defaultValue={selectedCourseYear} onChange={this.selectCourseYear}>

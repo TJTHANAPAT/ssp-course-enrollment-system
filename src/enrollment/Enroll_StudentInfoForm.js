@@ -154,7 +154,7 @@ class StudentInfoEnrollForm extends React.Component {
         return (
             <div className="body bg-gradient">
                 <div className="wrapper">
-                    <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
+                    <h1>ระบบลงทะเบียนเรียน</h1>
                     <h2>โรงเรียนสตรีสมุทรปราการ</h2>
                     <h4>ปีการศึกษา {this.props.courseYear}</h4>
                     {this.studentInfoEnrollForm()}
