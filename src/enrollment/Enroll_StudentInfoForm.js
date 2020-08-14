@@ -108,7 +108,7 @@ class StudentInfoEnrollForm extends React.Component {
                 <h5>กรอกข้อมูลส่วนตัวของคุณ</h5>
                 <div className="form-group">
                     <label htmlFor="studentID">เลขประจำตัวนักเรียน</label>
-                    <input type="number" pattern="[0-9]*" className="form-control" id="studentID" placeholder="เลขประจำตัวนักเรียน" onChange={updateInput} defaultValue={studentID} required />
+                    <input type="number" pattern="[0-9]*" className="form-control" id="studentID" placeholder="เลขประจำตัวนักเรียน 5 หลัก" onChange={updateInput} defaultValue={studentID} required />
                 </div>
                 <div className="form-row">
                     <div className="col-sm-2 form-group">
@@ -135,11 +135,11 @@ class StudentInfoEnrollForm extends React.Component {
                     {gradeSelector()}
                 </div>
                 <div className="form-row">
-                    <div className="col-6 form-group">
+                    <div className="col-sm-6 form-group">
                         <label htmlFor="studentClass">ห้องเรียน</label>
-                        <input type="number" pattern="[0-9]*" min="1" className="form-control" id="studentClass" placeholder="ห้องเรียน" onChange={updateInput} defaultValue={studentClass} required />
+                        <input type="number" pattern="[0-9]*" min="1" className="form-control" id="studentClass" placeholder="เช่น ม.1/4 ให้กรอกเลข 4" onChange={updateInput} defaultValue={studentClass} required />
                     </div>
-                    <div className="col-6 form-group">
+                    <div className="col-sm-6 form-group">
                         <label htmlFor="studentRoll">เลขที่</label>
                         <input type="number" pattern="[0-9]*" min="1" className="form-control" id="studentRoll" placeholder="เลขที่" onChange={updateInput} defaultValue={studentRoll} required />
                     </div>
