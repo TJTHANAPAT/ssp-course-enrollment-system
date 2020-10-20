@@ -19,6 +19,13 @@ class EditCourse extends React.Component {
             const courseID = await system.getURLParam('courseID');
             const course = await system.getCourseData(courseYear, courseID);
             const getCourseYearConfig = await system.getCourseYearConfig(courseYear, false);
+            let courseDescription = null
+            if (!!course.courseDescription) {
+                courseDescription = course.courseDescription
+            } else {
+                courseDescription = ""
+            }
+            
             this.setState({
                 courseYear: courseYear,
                 gradesArr: getCourseYearConfig.config.grades,
@@ -28,7 +35,8 @@ class EditCourse extends React.Component {
                 courseCapacity: course.courseCapacity,
                 courseTeacher: course.courseTeacher,
                 courseGrade: course.courseGrade,
-                courseDay: course.courseDay
+                courseDay: course.courseDay,
+                courseDescription: courseDescription
             })
             this.setState({ isLoading: false });
             this.setCheckBoxGrade();
@@ -65,7 +73,8 @@ class EditCourse extends React.Component {
             courseTeacher,
             courseGrade,
             courseDay,
-            courseCapacity
+            courseCapacity,
+            courseDescription
         } = this.state
         const courseData = {
             courseName: courseName,
@@ -74,6 +83,7 @@ class EditCourse extends React.Component {
             courseDay: courseDay,
             courseTeacher: courseTeacher,
             courseCapacity: parseInt(courseCapacity),
+            courseDescription: courseDescription
         }
         if (courseGrade.length !== 0 && courseDay.length !== 0) {
             this.setState({ isLoading: true });
@@ -126,6 +136,10 @@ class EditCourse extends React.Component {
                 <div className="form-group">
                     <label htmlFor="courseCapacity">จำนวนรับสมัคร</label>
                     <input type="number" pattern="[0-9]*" className="form-control" id="courseCapacity" placeholder="จำนวนรับสมัคร" onChange={this.updateInput} value={this.state.courseCapacity} required />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="courseDescription">คำอธิบายรายวิชา</label>
+                    <textarea className="form-control" rows="3" id="courseDescription" placeholder="คำอธิบายรายวิชา" onChange={this.updateInput} value={this.state.courseDescription} />
                 </div>
                 <button type="submit" className="btn btn-purple">บันทึก</button>
                 <button onClick={this.deleteCourse} className="btn btn-danger ml-2">ลบทิ้ง</button>

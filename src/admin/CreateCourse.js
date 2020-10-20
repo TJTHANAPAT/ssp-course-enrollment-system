@@ -11,6 +11,7 @@ import createCourse from '../functions/adminFunctions/createCourseFunction';
 class CreateCourse extends React.Component {
     state = {
         courseGrade: [],
+        courseDescription: "",
         isLoading: true
     }
 
@@ -56,7 +57,8 @@ class CreateCourse extends React.Component {
             courseTeacher,
             courseGrade,
             courseDay,
-            courseCapacity
+            courseCapacity,
+            courseDescription
         } = this.state
         const courseData = {
             courseName: courseName,
@@ -65,6 +67,7 @@ class CreateCourse extends React.Component {
             courseDay: courseDay,
             courseTeacher: courseTeacher,
             courseCapacity: parseInt(courseCapacity),
+            courseDescription: courseDescription,
             courseEnrolled: 0
         }
         if (courseGrade.length !== 0) {
@@ -78,6 +81,7 @@ class CreateCourse extends React.Component {
                         courseDay: [],
                         courseCapacity: '',
                         courseTeacher: '',
+                        courseDescription: '',
                         isLoading: false
                     });
                     let courseGradeCheckBoxes = document.getElementsByName('courseGradeCheckBox')
@@ -207,6 +211,10 @@ class CreateCourse extends React.Component {
                 <div className="form-group">
                     <label htmlFor="courseCapacity">จำนวนรับสมัคร</label>
                     <input type="number" pattern="[0-9]*" className="form-control" id="courseCapacity" placeholder="จำนวนรับสมัคร" onChange={this.updateInput} required />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="courseTeacher">คำอธิบายรายวิชา</label>
+                    <input type="text" className="form-control" id="courseDescription" placeholder="คำอธิบายรายวิชา" onChange={this.updateInput} />
                 </div>
                 <button type="submit" className="btn btn-purple">เพิ่ม</button>
                 <button onClick={this.goBack} className="btn btn-secondary ml-2">ย้อนกลับ</button>

@@ -64,6 +64,13 @@ class CoursesSelector extends React.Component {
                         return <input className="form-check-input" type="checkbox" name="selectCourseCheckbox" disabled />
                     }
                 }
+                let courseDescription = () => {
+                    if (!!course.courseDescription) {
+                        return (
+                            <span className="course-day"><i className="fa fa-fw fa-info" aria-hidden="false" /> {course.courseDescription}</span>
+                        )
+                    }
+                }
                 return (
                     <li className="list-group-item enroll-selector" key={i}>
                         <label className="full-width" htmlFor={course.courseID}>
@@ -75,9 +82,10 @@ class CoursesSelector extends React.Component {
                                     <div className="course-selector-item course row align-items-center">
                                         <div className="detail col-sm-6">
                                             <span className="course-name">{course.courseID} {course.courseName}</span>
-                                            <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="true"></i> {course.courseTeacher}</span>
-                                            <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="true"></i> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
+                                            <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="false"></i> {course.courseTeacher}</span>
+                                            <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="false"></i> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
                                             <span className="course-day"><i className="fa fa-fw fa-calendar-check-o" aria-hidden="false" /> {translateDayToThai(course.courseDay)}</span>
+                                            {courseDescription()}
                                         </div>
                                         <div className="col-sm-6">
                                             <div className="row align-items-center">

@@ -8,7 +8,8 @@ const updateCourseData = (courseYear, courseData) => {
         courseTeacher,
         courseGrade,
         courseDay,
-        courseCapacity
+        courseCapacity,
+        courseDescription
     } = courseData
     const courseDataUpdate = {
         courseName: courseName,
@@ -16,6 +17,7 @@ const updateCourseData = (courseYear, courseData) => {
         courseDay:courseDay,
         courseTeacher: courseTeacher,
         courseCapacity: parseInt(courseCapacity),
+        courseDescription: courseDescription
     }
     const db = firebase.firestore();
     const courseRef = db.collection(courseYear).doc('course').collection('course').doc(courseID);

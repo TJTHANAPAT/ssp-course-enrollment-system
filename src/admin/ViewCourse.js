@@ -213,11 +213,23 @@ class ViewCourse extends React.Component {
             return <ErrorPage errorMessage={errorMessage} btn={'back'} />
         } else {
             const { courseID, courseData, courseYear } = this.state
+            let courseDescription = null
+            if (!!courseData.courseDescription) {
+                courseDescription = courseData.courseDescription
+            } else {
+                courseDescription = 'ไม่มีคำอธิบายรายวิชาเพิ่มไว้สำหรับรายวิชานี้'
+            }
             return (
                 <div className="body bg-gradient">
                     <div className="wrapper">
                         <h1>{courseID} {courseData.courseName}</h1>
                         <p>รายวิชาเพิ่มเติม {courseID} {courseData.courseName} ปีการศึกษา {courseYear}</p>
+                        <p>
+                            ชื่อผู้สอน: {courseData.courseTeacher}<br/>
+                            ระดับชั้น: มัธยมศึกษาปีที่ {courseData.courseGrade.join(', ')}<br/>
+                            วันที่ทำการเรียนการสอน: {system.translateDayToThai(courseData.courseDay)}<br/>
+                            คำอธิบายรายวิชา: {courseDescription}
+                        </p>
                         {this.courseStatus()}
                         {this.studentsList()}
                         <button className="btn btn-wrapper-bottom btn-green" onClick={this.goBack}>ย้อนกลับ</button>
