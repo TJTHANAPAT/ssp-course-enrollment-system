@@ -30,7 +30,8 @@ class ViewCourse extends React.Component {
             console.error(err);
             this.setState({
                 isError: true,
-                errorMessage: err
+                errorMessage: err,
+                isLoading: false
             });
         }
     }

@@ -62,7 +62,7 @@ class CreateCourse extends React.Component {
         } = this.state
         const courseData = {
             courseName: courseName,
-            courseID: courseID,
+            courseID: courseID.trim(),
             courseGrade: courseGrade,
             courseDay: courseDay,
             courseTeacher: courseTeacher,
