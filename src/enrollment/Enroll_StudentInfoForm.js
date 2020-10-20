@@ -108,7 +108,13 @@ class StudentInfoEnrollForm extends React.Component {
                 <h5>กรอกข้อมูลส่วนตัวของคุณ</h5>
                 <div className="form-group">
                     <label htmlFor="studentID">เลขประจำตัวนักเรียน</label>
-                    <input type="number" pattern="[0-9]*" className="form-control" id="studentID" placeholder="เลขประจำตัวนักเรียน 5 หลัก" onChange={updateInput} defaultValue={studentID} required />
+                    <input 
+                        type="text" className="form-control" id="studentID" 
+                        pattern="[0-9]{5}" inputmode="numeric"
+                        title="กรุณากรอกเลขประจำตัวนักเรียน 5 หลัก" 
+                        placeholder="เลขประจำตัวนักเรียน 5 หลัก" 
+                        onChange={updateInput} defaultValue={studentID} required 
+                    />
                 </div>
                 <div className="form-row">
                     <div className="col-sm-2 form-group">
