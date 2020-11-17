@@ -84,7 +84,8 @@ class ViewCourse extends React.Component {
                 นามสกุล: student.nameLast,
                 ชั้น: student.studentGrade,
                 ห้อง: student.studentClass,
-                เลขที่: student.studentRoll
+                เลขที่: student.studentRoll,
+                วิชาที่ลงทะเบียน: courseID
             }
             studentsArrFormated.push(studentDataFormated);
             return null;
