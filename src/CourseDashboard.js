@@ -93,12 +93,20 @@ class Dashboard extends React.Component {
                 } else {
                     courseStatus = 'เต็ม'
                 }
+                let courseDescription = () => {
+                    if (!!course.courseDescription) {
+                        return (
+                            <span className="course-day"><i className="fa fa-fw fa-info" aria-hidden="false" /> {course.courseDescription}</span>
+                        )
+                    }
+                }
                 return (
                     <div className="course-dashboard-item course row align-items-center" key={i}>
                         <div className="detail col-sm-6">
                             <span className="course-name">{course.courseID} {course.courseName}</span>
                             <span className="course-teacher"><i className="fa fa-fw fa-user" aria-hidden="true"></i> {course.courseTeacher}</span>
                             <span className="course-grade"><i className="fa fa-fw fa-check-square-o" aria-hidden="true"></i> มัธยมศึกษาปีที่ {course.courseGrade.join(', ')}</span>
+                            {courseDescription()}
                         </div>
                         <div className="col-sm-6">
                             <div className="row align-items-center">
@@ -135,7 +143,7 @@ class Dashboard extends React.Component {
             return (
                 <div id="course-dashboard" className="body bg-gradient">
                     <div className="wrapper">
-                        <h1>ระบบลงทะเบียนรายวิชาเพิ่มเติม</h1>
+                        <h1>ระบบลงทะเบียนเรียน</h1>
                         <h2>โรงเรียนสตรีสมุทรปราการ</h2>
                         <h4>รายวิชาเพิ่มเติมปีการศึกษา {courseYear}</h4>
                         <label htmlFor="grade-filter">กรองรายวิชาโดยชั้นเรียน:</label>
