@@ -1,5 +1,6 @@
 import React from 'react';
-import { daysArr, translateDayToThai } from '../functions/systemFunctions';
+import { getSystemConfig, daysArr, translateDayToThai,  } from '../functions/systemFunctions';
+
 import * as enroll from '../functions/enrollCourseFunction';
 import LoadingPage from '../components/LoadingPage';
 import ErrorPage from '../components/ErrorPage';
@@ -26,14 +27,18 @@ class CoursesSelector extends React.Component {
             coursesData,
             enrollPlans,
             studentEnrollPlan,
-            studentInfo
+            studentInfo,
+            courseYearConfig,
+            systemConfig
         } = this.props;
         this.setState({
             courseYear: courseYear,
             coursesData: coursesData,
             enrollPlans: enrollPlans,
             studentEnrollPlan: studentEnrollPlan,
-            studentInfo: studentInfo
+            studentInfo: studentInfo,
+            courseYearConfig: courseYearConfig,
+            systemConfig: systemConfig
         });
     }
 
@@ -284,7 +289,8 @@ class CoursesSelector extends React.Component {
                 courseYear,
                 studentInfo,
                 studentEnrollPlan,
-                studentEnrolledCourse
+                studentEnrolledCourse,
+                courseYearConfig
             } = this.state;
             const {
                 studentID,
@@ -306,6 +312,12 @@ class CoursesSelector extends React.Component {
                 studentEnrollPlan: studentEnrollPlan,
                 enrolledCourse: studentEnrolledCourse
             }
+
+            // Uncomment these lines to recheck if courseYear is available
+            // const systemConfig = await getSystemConfig();
+            // await enroll.checkCourseYearAvailable(courseYear, systemConfig.systemConfig);
+            
+            await enroll.checkCourseYearEnrollmentTime(courseYear, courseYearConfig);
             await enroll.checkStudentID(courseYear, studentID);
             const timeout = (ms) => {
                 return new Promise(resolve => setTimeout(resolve, ms));

@@ -17,7 +17,24 @@ export function checkCourseYearAvailable(courseYear = '', systemConfig = {}) {
         } else if (isCourseYearAvailable) {
             resolve();
         } else {
-            reject(`ระบบลงทะเบียนรายวิชาเพิ่มเติมสำหรับปีการศึกษา ${courseYear} ยังไม่เปิดให้ลงทะเบียนในขณะนี้`);
+            reject(`ระบบลงทะเบียนเรียนสำหรับปีการศึกษา ${courseYear} ไม่เปิดให้ลงทะเบียนในขณะนี้`);
+        }
+    })
+}
+
+export function checkCourseYearEnrollmentTime(courseYear = '', courseYearConfig = {}) {
+    return new Promise((resolve, reject) => {
+        if (!!courseYearConfig.isEnrollTimeSet){
+            const currentTime = new Date();
+            const enrollStartDatetime = new Date(courseYearConfig.enrollStartDatetime.seconds*1000);
+            const enrollEndDatetime = new Date(courseYearConfig.enrollEndDatetime.seconds*1000);
+            if (enrollStartDatetime <= currentTime && currentTime <= enrollEndDatetime) {
+                resolve();
+            } else {
+                reject(`ระบบลงทะเบียนเรียนสำหรับปีการศึกษา ${courseYear} ไม่เปิดให้ลงทะเบียนในขณะนี้ (ไม่อยู่ในวันและเวลาที่กำหนดไว้)`);
+            }
+        } else {
+            resolve();
         }
     })
 }
@@ -188,7 +205,7 @@ export function checkStudentID(courseYear, studentID) {
                     resolve();
                 } else {
                     const student = doc.data();
-                    const err = `เลขประจำตัวนักเรียน ${student.studentID} ถูกใช้ลงทะเบียนเรียนในชื่อของ ${student.nameFirst} ${student.nameLast} ไปแล้วในรายวิชาหนึ่งของปีการศึกษา ${courseYear} หากเลขประจำตัวนี้เป็นของคุณกรุณาติดต่อผู้ดูแลระบบ`
+                    const err = `เลขประจำตัวนักเรียน ${student.studentID} ถูกใช้ลงทะเบียนเรียนในชื่อของ ${student.nameFirst} ${student.nameLast} ไปแล้วในปีการศึกษา ${courseYear} หากเลขประจำตัวนี้เป็นของคุณกรุณาติดต่อผู้ดูแลระบบ`
                     reject(err);
                 }
             })

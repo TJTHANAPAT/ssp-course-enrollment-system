@@ -9,7 +9,6 @@ import * as system from '../functions/systemFunctions';
 import Switch from 'react-switch';
 import Datetime from 'react-datetime';
 import "react-datetime/css/react-datetime.css";
-import moment from 'moment';
 import 'moment/locale/th';
 
 class IndividualCourseYearConfig extends React.Component {
@@ -479,7 +478,7 @@ class IndividualCourseYearConfig extends React.Component {
                 <div className="body bg-gradient">
                     <div className="wrapper text-left">
                         <h1>ตั้งค่าปีการศึกษา {courseYear}</h1>
-                        <p>ตั้งค่าระดับชั้นเรียนและรูปแบบการลงทะเบียนสำหรับปีการศึกษา {courseYear}</p>
+                        <p>ตั้งค่าระดับต่าง ๆ สำหรับปีการศึกษา {courseYear}</p>
                         <hr className="mt-4 mb-4" />
                         {this.gradeConfig()}
                         <hr className="mt-4 mb-4" />

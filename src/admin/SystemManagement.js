@@ -22,7 +22,7 @@ class SystemManagement extends React.Component {
                 isLogin: !!user
             });
             if (!!user) {
-                console.log('Course Enrollment System © 2020 Created by TJTHANAPAT')
+                console.log('SSP Course Enrollment System © 2021 Created by TJTHANAPAT')
                 const getSystemConfig = await system.getSystemConfig(false);
                 const isFirstInitSystem = getSystemConfig.isFirstInitSystem;
                 this.setState({ isFirstInitSystem: isFirstInitSystem });

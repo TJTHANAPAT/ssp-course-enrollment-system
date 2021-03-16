@@ -23,6 +23,7 @@ class Enrollment extends React.Component {
             await enroll.checkCourseYearAvailable(courseYear, systemConfig);
             const getCourseYearConfig = await system.getCourseYearConfigForEnrollment(courseYear, courseYearsArr);
             const courseYearConfig = getCourseYearConfig.config;
+            await enroll.checkCourseYearEnrollmentTime(courseYear, courseYearConfig);
             const coursesData = await enroll.getCoursesData(courseYear);
             this.setState({
                 isLoading: false,
@@ -98,6 +99,7 @@ class Enrollment extends React.Component {
                     enrollPlans={this.state.courseYearConfig.enrollPlans}
                     studentInfo={this.state.studentInfo}
                     studentEnrollPlan={this.state.studentEnrollPlan}
+                    courseYearConfig={this.state.courseYearConfig}
                     goNextStepFunction={this.completeEnrollment}
                     goPreviousStepFunction={this.goBackSelectEnrollPlan}
                 />

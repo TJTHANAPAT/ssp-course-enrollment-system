@@ -110,7 +110,7 @@ class StudentInfoEnrollForm extends React.Component {
                     <label htmlFor="studentID">เลขประจำตัวนักเรียน</label>
                     <input 
                         type="text" className="form-control" id="studentID" 
-                        pattern="[0-9]{5}" inputmode="numeric"
+                        pattern="[0-9]{5}" inputMode="numeric"
                         title="กรุณากรอกเลขประจำตัวนักเรียน 5 หลัก" 
                         placeholder="เลขประจำตัวนักเรียน 5 หลัก" 
                         onChange={updateInput} defaultValue={studentID} required 
