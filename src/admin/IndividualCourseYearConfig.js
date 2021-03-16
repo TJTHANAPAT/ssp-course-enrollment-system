@@ -6,6 +6,11 @@ import Footer from '../components/Footer';
 import ErrorPage from '../components/ErrorPage';
 import * as auth from '../functions/adminFunctions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
+import Switch from 'react-switch';
+import Datetime from 'react-datetime';
+import "react-datetime/css/react-datetime.css";
+import moment from 'moment';
+import 'moment/locale/th';
 
 class IndividualCourseYearConfig extends React.Component {
     state = {
@@ -33,6 +38,9 @@ class IndividualCourseYearConfig extends React.Component {
                 enrollPlans: courseYearConfig.enrollPlans,
                 gradesArr: courseYearConfig.grades,
                 isFirstInitConfig: getCourseYearConfig.isFirstInitConfig,
+                isEnrollTimeSet: courseYearConfig.isEnrollTimeSet,
+                enrollStartDatetime: !!courseYearConfig.isEnrollTimeSet ? new Date(courseYearConfig.enrollStartDatetime.seconds*1000): undefined,
+                enrollEndDatetime: !!courseYearConfig.isEnrollTimeSet ? new Date(courseYearConfig.enrollEndDatetime.seconds*1000): undefined
             })
         }
         catch (err) {
@@ -91,39 +99,53 @@ class IndividualCourseYearConfig extends React.Component {
         this.setState({ gradesArr: gradesArr })
     }
 
-    saveGrade = (event) => {
+    saveCourseYearConfig = (event) => {
         event.preventDefault();
         const {
             courseYear,
             isFirstInitConfig,
             gradesArr,
-            enrollPlans
+            enrollPlans,
+            isEnrollTimeSet,
+            enrollStartDatetime,
+            enrollEndDatetime
         } = this.state
         const db = firebase.firestore();
         const configRef = db.collection(courseYear).doc('config')
-        const config = { grades: gradesArr, enrollPlans: enrollPlans }
-        if (!isFirstInitConfig) {
-            configRef.update(config)
-                .then(() => {
-                    console.log('Update successfully!')
-                    alert('บันทึกสำเร็จ')
-                })
-                .catch(err => {
-                    console.error('Error: ', err)
-                    alert('บันทึกไม่สำเร็จ')
-                })
+        let config = { grades: gradesArr, enrollPlans: enrollPlans }
+        const isValidEnrollDatetime = enrollEndDatetime > enrollStartDatetime;
+        
+        if (!!isEnrollTimeSet && isValidEnrollDatetime) {
+            config = {...config, isEnrollTimeSet: true, enrollStartDatetime, enrollEndDatetime}
         } else {
-            configRef.set(config)
-                .then(() => {
-                    console.log('Update successfully!')
-                    alert('บันทึกสำเร็จ')
-                })
-                .catch(err => {
-                    console.error('Error: ', err)
-                    alert('บันทึกไม่สำเร็จ')
-                })
+            config = {...config, isEnrollTimeSet: false, enrollStartDatetime: false, enrollEndDatetime: false}
         }
 
+        if ((!!isEnrollTimeSet && isValidEnrollDatetime) || !isEnrollTimeSet) {
+            if (!isFirstInitConfig) {
+                configRef.update(config)
+                    .then(() => {
+                        console.log('Update successfully!')
+                        alert('บันทึกสำเร็จ')
+                    })
+                    .catch(err => {
+                        console.error('Error: ', err)
+                        alert('บันทึกไม่สำเร็จ')
+                    })
+            } else {
+                configRef.set(config)
+                    .then(() => {
+                        console.log('Update successfully!')
+                        alert('บันทึกสำเร็จ')
+                    })
+                    .catch(err => {
+                        console.error('Error: ', err)
+                        alert('บันทึกไม่สำเร็จ')
+                    })
+            }
+        } else {
+            alert('ระบุเวลาที่เปิดให้ทำการลงทะเบียนไม่ถูกต้อง')
+        }
     }
 
     gradeList = () => {
@@ -365,6 +387,86 @@ class IndividualCourseYearConfig extends React.Component {
         )
     }
 
+    handleChangeEnrollmentTimeToggle = (checked, event, id) => {
+        event.preventDefault();
+        console.log(`Enrollment Time Setting for course year ${id} is currently `, checked ? 'on.': 'off.')
+        this.setState({isEnrollTimeSet: checked})
+        if (!checked) {
+            this.setState({enrollStartDatetime: undefined, enrollEndDatetime: undefined})
+        }
+    }
+
+    handleChangeEnrollStartDatetime = (moment) => {
+        console.log(moment)
+        const enrollStartDatetime = new Date(moment)
+        this.setState({enrollStartDatetime: enrollStartDatetime});
+    }
+
+    handleChangeEnrollEndDatetime = (moment) => {
+        console.log(moment)
+        const enrollEndDatetime = new Date(moment)
+        this.setState({enrollEndDatetime: enrollEndDatetime});
+    }
+
+    enrollmentDatetimeSelector = () => {
+        const {
+            isEnrollTimeSet,
+            enrollStartDatetime,
+            enrollEndDatetime
+        } = this.state;
+        if (!!isEnrollTimeSet) {
+            return (
+                <div className="form-row mt-2">
+                    <div className="col-sm-6 form-group">
+                        <label htmlFor="enrollStartDatetime">เวลาที่เปิดให้ลงทะเบียน</label>
+                        <Datetime
+                            value={enrollStartDatetime}
+                            id="enrollStartDatetime"
+                            inputProps={{placeholder:'ระบุวันที่และเวลา...'}}
+                            onChange={this.handleChangeEnrollStartDatetime}
+                            locale="th"
+                        />
+                    </div>
+                    <div className="col-sm-6 form-group">
+                        <label htmlFor="enrollEndDatetime">เวลาที่ปิดให้ลงทะเบียน</label>
+                        <Datetime
+                            value={enrollEndDatetime}
+                            id="enrollEndDatetime"
+                            inputProps={{placeholder:'ระบุวันที่และเวลา...'}}
+                            onChange={this.handleChangeEnrollEndDatetime}
+                        />
+                    </div>
+                </div>
+            )
+        }
+    }
+
+    enrollmentTimeSetting = () => {
+        const {isEnrollTimeSet, courseYear} = this.state;
+        let message = !!isEnrollTimeSet ? 'มีการกำหนดเวลา' : 'ไม่มีการกำหนดเวลา'
+        return (
+            <div>
+                <h3>ตั้งค่าการกำหนดเวลาที่เปิดให้ทำการลงทะเบียน</h3>
+                <ul className="list-group admin">
+                    <li className="list-group-item" >
+                        <div className="list-item-text">
+                            <span>{message}</span>
+                        </div>
+                        <div className="list-item-action-panel">
+                            <Switch
+                                id={courseYear}
+                                onChange={this.handleChangeEnrollmentTimeToggle}
+                                checked={!!isEnrollTimeSet}
+                            />
+                        </div>
+                    </li>
+                </ul>
+                {this.enrollmentDatetimeSelector()}
+                <p className="mt-2"><i>หมายเหตุ: ต้องตั้งค่าให้ปีการศึกษานี้อยู่ในสถานะเปิดให้ลงทะเบียน เพื่อใช้งานการกำหนดเวลาที่เปิดให้ทำการลงทะเบียน</i></p>
+            </div>
+        )
+    }
+
     render() {
         const { isLoading, isError, errorMessage } = this.state;
         if (isLoading) {
@@ -383,8 +485,10 @@ class IndividualCourseYearConfig extends React.Component {
                         <hr className="mt-4 mb-4" />
                         {this.enrollmentPlansManagement()}
                         <hr className="mt-4 mb-4" />
+                        {this.enrollmentTimeSetting()}
+                        <hr className="mt-4 mb-4" />
                         <div className="mt-2">
-                            <button type="submit" className="btn btn-purple" onClick={this.saveGrade}>บันทึก</button>
+                            <button type="submit" className="btn btn-purple" onClick={this.saveCourseYearConfig}>บันทึก</button>
                             <button onClick={this.goBack} className="btn btn-secondary ml-2">ย้อนกลับ</button>
                         </div>
                     </div>
