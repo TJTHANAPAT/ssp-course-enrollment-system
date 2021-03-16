@@ -4,7 +4,7 @@ class Footer extends React.Component {
     render(){
         return (
             <footer>
-                Course Enrollment System © 2020<br/>
+                SSP Course Enrollment System © 2020-2021<br/>
                 Created by TJTHANAPAT
             </footer>
         )
