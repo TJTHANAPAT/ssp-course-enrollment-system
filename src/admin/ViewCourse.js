@@ -8,6 +8,9 @@ import ErrorPage from '../components/ErrorPage';
 import * as auth from '../functions/adminFunctions/authenticationFuctions';
 import * as system from '../functions/systemFunctions';
 
+import moment from 'moment';
+import 'moment/locale/th';
+
 class ViewCourse extends React.Component {
     state = {
         isLoading: true,
@@ -19,12 +22,14 @@ class ViewCourse extends React.Component {
             const courseYear = await system.getURLParam('courseYear');
             const courseID = await system.getURLParam('courseID');
             const course = await system.getCourseData(courseYear, courseID);
+            const studentsArr = await this.getCourseStudentsData(courseYear, course.courseDay, courseID);
             this.setState({
                 courseYear: courseYear,
                 courseID: courseID,
+                courseData: course,
+                studentsArr: studentsArr
             })
-            this.getCourseData(courseYear, courseID)
-            this.getCourseStudentsData(courseYear, courseID, course.courseDay)
+            await this.validateCourseEnrollStat(course, studentsArr)
         }
         catch (err) {
             console.error(err);
@@ -33,6 +38,9 @@ class ViewCourse extends React.Component {
                 errorMessage: err,
                 isLoading: false
             });
+        }
+        finally {
+            this.setState({ isLoading: false });
         }
     }
 
@@ -104,35 +112,59 @@ class ViewCourse extends React.Component {
         })
     }
 
-    getCourseStudentsData = (courseYear, courseID, courseDay) => {
+    getCourseStudentsData = (courseYear, courseDay, courseID) => {
         const db = firebase.firestore();
         const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
-        this.setState({ isLoading: true });
-        studentRef.onSnapshot(querySnapshot => {
-            let studentsArr = [];
-            querySnapshot.forEach(function (doc) {
-                studentsArr.push(doc.data());
-            });
-            let studentTimestamp = [];
-            studentsArr.forEach(student => {
-                studentTimestamp.push(student.timestamp.seconds);
-            })
-            studentTimestamp.sort((a, b) => a - b)
-            let studentsArrOrderByTimestamp = [];
-            for (let i = 0; i < studentTimestamp.length; i++) {
-                const timestamp = studentTimestamp[i];
-                for (let j = 0; j < studentsArr.length; j++) {
-                    const student = studentsArr[j];
-                    if (timestamp === student.timestamp.seconds) {
-                        studentsArrOrderByTimestamp.push(student)
-                        studentsArr.splice(j, 1);
+        return new Promise((resolve, reject) => {
+            studentRef.onSnapshot(querySnapshot => {
+                let studentsArr = [];
+                querySnapshot.forEach(function (doc) {
+                    studentsArr.push(doc.data());
+                });
+                let studentTimestamp = [];
+                studentsArr.forEach(student => {
+                    studentTimestamp.push(student.timestamp.seconds);
+                })
+                studentTimestamp.sort((a, b) => a - b)
+                let studentsArrOrderByTimestamp = [];
+                for (let i = 0; i < studentTimestamp.length; i++) {
+                    const timestamp = studentTimestamp[i];
+                    for (let j = 0; j < studentsArr.length; j++) {
+                        const student = studentsArr[j];
+                        if (timestamp === student.timestamp.seconds) {
+                            studentsArrOrderByTimestamp.push(student)
+                            studentsArr.splice(j, 1);
+                        }
                     }
                 }
+                resolve(studentsArrOrderByTimestamp)
+            })
+        })
+    }
+
+    validateCourseEnrollStat = (course, studentsArr) => {
+        return new Promise ((resolve, reject) => {
+            if (studentsArr.length == course.courseEnrolled) {
+                console.log('Course Enrolled Number is valid.')
+                resolve();
+            } else {
+                console.log('Course Enrolled Number is invalid.')
+                const { courseYear } = this.state;
+                const db = firebase.firestore();
+                const courseRef = db.collection(courseYear).doc('course').collection('course').doc(course.courseID);
+                courseRef.update({ courseEnrolled: studentsArr.length })
+                    .then(() => {
+                        console.log('Course Enrolled Number has been updated.')
+                        course = {...course, courseEnrolled: studentsArr.length}
+                        this.setState({courseData: course})
+                        resolve();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        const errorMessage = `System failed updating course enrolled student. ${err.message}`;
+                        reject(errorMessage);
+                    })
             }
-            this.setState({
-                studentsArr: studentsArrOrderByTimestamp,
-                isLoading: false
-            });
         })
     }
 
@@ -167,6 +199,8 @@ class ViewCourse extends React.Component {
             return <p className="text-center">ยังไม่มีนักเรียนลงทะเบียนในรายวิชานี้</p>
         } else {
             let studentsList = studentsArr.map((student, i) => {
+                const timestamp = moment(new Date(student.timestamp.seconds * 1000)).format("D MMMM YYYY, hh:mm:ss ");
+
                 return (
                     <tr key={i}>
                         <td>{i + 1}</td>
@@ -176,7 +210,7 @@ class ViewCourse extends React.Component {
                         <td>{student.nameLast}</td>
                         <td>{student.studentGrade} / {student.studentClass}</td>
                         <td>{student.studentRoll}</td>
-                        <td>{new Date(student.timestamp.seconds * 1000).toLocaleString()}</td>
+                        <td>{timestamp}</td>
                     </tr>
                 )
             })
