@@ -31,7 +31,7 @@ export function checkCourseYearEnrollmentTime(courseYear = '', courseYearConfig 
             if (enrollStartDatetime <= currentTime && currentTime <= enrollEndDatetime) {
                 resolve();
             } else {
-                reject(`ระบบลงทะเบียนเรียนสำหรับปีการศึกษา ${courseYear} ไม่เปิดให้ลงทะเบียนในขณะนี้ (ไม่อยู่ในวันและเวลาที่กำหนดไว้)`);
+                reject(`ระบบลงทะเบียนเรียนสำหรับปีการศึกษา ${courseYear} ไม่เปิดให้ลงทะเบียนในขณะนี้ (ไม่อยู่ในวันและเวลาที่กำหนดให้ลงทะเบียน)`);
             }
         } else {
             resolve();

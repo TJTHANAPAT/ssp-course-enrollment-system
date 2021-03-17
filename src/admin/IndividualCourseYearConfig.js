@@ -445,7 +445,7 @@ class IndividualCourseYearConfig extends React.Component {
         let message = !!isEnrollTimeSet ? 'มีการกำหนดเวลา' : 'ไม่มีการกำหนดเวลา'
         return (
             <div>
-                <h3>ตั้งค่าการกำหนดเวลาที่เปิดให้ทำการลงทะเบียน</h3>
+                <h3>ตั้งค่าการกำหนดเวลาการลงทะเบียน</h3>
                 <ul className="list-group admin">
                     <li className="list-group-item" >
                         <div className="list-item-text">
@@ -461,7 +461,7 @@ class IndividualCourseYearConfig extends React.Component {
                     </li>
                 </ul>
                 {this.enrollmentDatetimeSelector()}
-                <p className="mt-2"><i>หมายเหตุ: ต้องตั้งค่าให้ปีการศึกษานี้อยู่ในสถานะเปิดให้ลงทะเบียน เพื่อใช้งานการกำหนดเวลาที่เปิดให้ทำการลงทะเบียน</i></p>
+                <p className="mt-2"><i>หมายเหตุ: ต้องตั้งค่าให้ปีการศึกษานี้อยู่ในสถานะเปิดให้ลงทะเบียน เพื่อใช้งานการกำหนดเวลาการลงทะเบียน</i></p>
             </div>
         )
     }
@@ -478,7 +478,7 @@ class IndividualCourseYearConfig extends React.Component {
                 <div className="body bg-gradient">
                     <div className="wrapper text-left">
                         <h1>ตั้งค่าปีการศึกษา {courseYear}</h1>
-                        <p>ตั้งค่าระดับต่าง ๆ สำหรับปีการศึกษา {courseYear}</p>
+                        <p>ตั้งค่าต่าง ๆ สำหรับปีการศึกษา {courseYear}</p>
                         <hr className="mt-4 mb-4" />
                         {this.gradeConfig()}
                         <hr className="mt-4 mb-4" />
