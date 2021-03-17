@@ -144,7 +144,7 @@ class ViewCourse extends React.Component {
 
     validateCourseEnrollStat = (course, studentsArr) => {
         return new Promise ((resolve, reject) => {
-            if (studentsArr.length == course.courseEnrolled) {
+            if (studentsArr.length === course.courseEnrolled) {
                 console.log('Course Enrolled Number is valid.')
                 resolve();
             } else {
