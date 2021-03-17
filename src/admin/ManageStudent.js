@@ -7,6 +7,8 @@ import * as deleteStudent from '../functions/adminFunctions/deleteStudentFunctio
 import LoadingPage from '../components/LoadingPage';
 import ErrorPage from '../components/ErrorPage';
 import Footer from '../components/Footer';
+import moment from 'moment';
+import 'moment/locale/th';
 
 class GetStudentData extends React.Component {
     state = {
@@ -205,7 +207,7 @@ class GetStudentData extends React.Component {
                 enrolledCourse
             } = studentData
             const studentEnrollPlan = studentData.studentEnrollPlan !== undefined ? studentData.studentEnrollPlan : 'ลงทะเบียนในระบบรูปแบบเก่า';
-            const timestamp = studentData.timestamp !== undefined ? new Date(studentData.timestamp.seconds * 1000).toLocaleString() : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
+            const timestamp = studentData.timestamp !== undefined ? moment(new Date(studentData.timestamp.seconds * 1000)).format("D MMMM YYYY, hh:mm:ss ") : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
             let studentEnrolledCourseDetail;
             if (studentData.studentEnrollPlan !== undefined) {
                 const daysArr = [

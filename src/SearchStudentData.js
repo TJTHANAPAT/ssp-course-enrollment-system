@@ -5,6 +5,8 @@ import * as system from './functions/systemFunctions';
 import LoadingPage from './components/LoadingPage';
 import ErrorPage from './components/ErrorPage';
 import Footer from './components/Footer';
+import moment from 'moment';
+import 'moment/locale/th';
 
 class SearchStudentData extends React.Component {
     state = {
@@ -201,7 +203,7 @@ class SearchStudentData extends React.Component {
                 studentEnrollPlan,
                 enrolledCourse
             } = studentData
-            const timestamp = studentData.timestamp !== undefined ? new Date(studentData.timestamp.seconds * 1000).toLocaleString() : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
+            const timestamp = studentData.timestamp !== undefined ? moment(new Date(studentData.timestamp.seconds * 1000)).format("D MMMM YYYY, hh:mm:ss ") : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
             const daysArr = [
                 'sunday',
                 'monday',
