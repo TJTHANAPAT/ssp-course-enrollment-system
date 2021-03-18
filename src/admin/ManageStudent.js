@@ -207,7 +207,7 @@ class GetStudentData extends React.Component {
                 enrolledCourse
             } = studentData
             const studentEnrollPlan = studentData.studentEnrollPlan !== undefined ? studentData.studentEnrollPlan : 'ลงทะเบียนในระบบรูปแบบเก่า';
-            const timestamp = studentData.timestamp !== undefined ? moment(new Date(studentData.timestamp.seconds * 1000)).format("D MMMM YYYY, hh:mm:ss ") : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
+            const timestamp = studentData.timestamp !== undefined ? moment(new Date(studentData.timestamp.seconds * 1000)).format("D MMMM YYYY, LTS") : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
             let studentEnrolledCourseDetail;
             if (studentData.studentEnrollPlan !== undefined) {
                 const daysArr = [

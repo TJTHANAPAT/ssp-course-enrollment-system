@@ -199,7 +199,7 @@ class ViewCourse extends React.Component {
             return <p className="text-center">ยังไม่มีนักเรียนลงทะเบียนในรายวิชานี้</p>
         } else {
             let studentsList = studentsArr.map((student, i) => {
-                const timestamp = moment(new Date(student.timestamp.seconds * 1000)).format("D MMMM YYYY, hh:mm:ss ");
+                const timestamp = moment(new Date(student.timestamp.seconds * 1000)).format("D MMMM YYYY, LTS");
 
                 return (
                     <tr key={i}>

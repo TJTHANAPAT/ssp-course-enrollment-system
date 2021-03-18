@@ -203,7 +203,7 @@ class SearchStudentData extends React.Component {
                 studentEnrollPlan,
                 enrolledCourse
             } = studentData
-            const timestamp = studentData.timestamp !== undefined ? moment(new Date(studentData.timestamp.seconds * 1000)).format("D MMMM YYYY, hh:mm:ss ") : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
+            const timestamp = studentData.timestamp !== undefined ? moment(new Date(studentData.timestamp.seconds * 1000)).format("D MMMM YYYY, LTS") : 'ไม่พบข้อมูลเวลาการลงทะเบียน';
             const daysArr = [
                 'sunday',
                 'monday',
