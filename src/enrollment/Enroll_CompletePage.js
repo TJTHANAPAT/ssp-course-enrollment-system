@@ -74,7 +74,7 @@ class EnrollmentCompletePage extends React.Component {
                             <h1>คุณลงทะเบียนสำเร็จแล้ว</h1>
                             <p>
                                 <b>{nameTitle}{nameFirst} {nameLast}</b> (เลขประจำตัวนักเรียน : {studentID})
-                                ได้ทำการลงทะเบียนเรียนรายวิชาเพิ่มเติมรูปแบบ '{studentEnrollPlan}' ในปีการศึกษา {courseYear} ในรายวิชาดังนี้
+                                ได้ทำการลงทะเบียนเรียนรูปแบบ '{studentEnrollPlan}' ในปีการศึกษา {courseYear} ในรายวิชาดังนี้
                             </p>
                             {studentEnrolledCourseDetail}
                         </div>
