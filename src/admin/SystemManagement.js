@@ -41,7 +41,7 @@ class SystemManagement extends React.Component {
             this.setState({
                 isLoading: false,
                 isError: true,
-                errorMessage: err
+                errorMessage: err.message
             })
         }
     }
@@ -150,6 +150,90 @@ class SystemManagement extends React.Component {
             })
     }
 
+    getCourseStudentsData = (courseYear, courseDay, courseID) => {
+        const db = firebase.firestore();
+        const studentRef = db.collection(courseYear).doc('student').collection('student').where(`enrolledCourse.${courseDay}`, 'array-contains', courseID);
+        return new Promise((resolve, reject) => {
+            studentRef.onSnapshot(querySnapshot => {
+                let studentsArr = [];
+                querySnapshot.forEach(function (doc) {
+                    const {
+                        studentID, 
+                        nameTitle, 
+                        nameFirst, 
+                        nameLast, 
+                        studentGrade,
+                        studentClass,
+                        studentRoll
+                    } = doc.data()
+                    studentsArr.push({
+                        เลขประจำตัว: studentID,
+                        คำนำหน้า: nameTitle,
+                        ชื่อ: nameFirst,
+                        นามสกุล: nameLast,
+                        ชั้น: studentGrade,
+                        ห้อง: studentClass,
+                        เลขที่: studentRoll,
+                        วิชาที่ลงทะเบียน: courseID
+                    });
+                });
+                resolve(studentsArr)
+            })
+        })
+    }
+
+    convertToCSV = (objectArr) => {
+        const array = [Object.keys(objectArr[0])].concat(objectArr)
+        return array.map(it => {
+            return Object.values(it).toString()
+        }).join('\n')
+    }
+
+    exportStudentList = async () => {
+        const { courses } = this.state;
+        const courseYear = this.state.selectedCourseYear;
+        
+        try {
+            if (courses.length === 0) {
+                alert(`ยังไม่มีรายวิชาที่ถูกเพิ่มในปีการศึกษา ${courseYear}`)
+            } else {
+                this.setState({ isLoading: true })
+                let studentsArr = []
+                for (const course of courses) {
+                    let {courseID, courseDay} = course
+                    let studentsData = await this.getCourseStudentsData(courseYear, courseDay, courseID)
+                    studentsArr = studentsArr.concat(studentsData)
+                }
+                const csv = this.convertToCSV(studentsArr);
+                const filename =  `StudentList_${courseYear}.csv` || 'export.csv';
+
+                var blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+                if (navigator.msSaveBlob) { // IE 10+
+                    navigator.msSaveBlob(blob, filename);
+                } else {
+                    var link = document.createElement("a");
+                    if (link.download !== undefined) { // feature detection
+                        // Browsers that support HTML5 download attribute
+                        var url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", filename);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+                this.setState({ isLoading: false })
+            }
+        } catch (err) {
+            this.setState({
+                isLoading: false,
+                isError: true,
+                errorMessage: err.message
+            })
+        }
+    }
+
     render() {
         const {
             isLoading,
@@ -195,6 +279,7 @@ class SystemManagement extends React.Component {
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/createcourse?courseYear=${selectedCourseYear}`}>เพิ่มรายวิชาใหม่</a>
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/configcourseyear?courseYear=${selectedCourseYear}`}>ตั้งค่าปีการศึกษา {selectedCourseYear}</a>
                                 <a role="button" className="btn btn-purple m-1" href={`/admin/managestudent?courseYear=${selectedCourseYear}`}>การจัดการนักเรียน</a>
+                                <button className="btn btn-purple m-1" onClick={this.exportStudentList}>ดาวน์โหลดรายชื่อนักเรียนทั้งหมด</button>
                             </div>
                             <hr />
                             <div>
