@@ -14,7 +14,7 @@
     "react-firebaseui": "^4.1.0",
     "react-neumorphic-toggle": "^1.0.1",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.4.1",
+    "react-scripts": "5.0.1",
     "react-switch": "^5.0.1"
   },
   "scripts": {
